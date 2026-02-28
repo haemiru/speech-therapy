@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Therapy Progress Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2bee6c",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header Section -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+<div class="text-slate-900 dark:text-slate-100 flex size-10 shrink-0 items-center">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Therapy Progress</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full size-10 bg-primary/10 text-primary">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="bg-background-light dark:bg-background-dark sticky top-[57px] z-10">
+<div class="flex border-b border-slate-200 dark:border-slate-800 px-4 gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-slate-900 dark:text-slate-100 pb-3 pt-4" href="#">
+<p class="text-sm font-bold">Daily Stats</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-slate-500 dark:text-slate-400 pb-3 pt-4" href="#">
+<p class="text-sm font-medium">Long-term Trends</p>
+</a>
+</div>
+</div>
+<!-- Summary Banner Card -->
+<div class="p-4">
+<div class="bg-slate-900 dark:bg-primary/20 rounded-xl p-5 text-white flex justify-between items-center overflow-hidden relative">
+<div class="z-10">
+<p class="text-xs font-medium opacity-80 uppercase tracking-wider">Weekly Streak</p>
+<h3 class="text-2xl font-bold">5 Day Success!</h3>
+<p class="text-sm mt-1 text-primary">Leo is making great progress</p>
+</div>
+<div class="z-10 bg-white/10 p-3 rounded-full backdrop-blur-sm">
+<span class="material-symbols-outlined text-primary text-3xl">star</span>
+</div>
+<div class="absolute right-[-10%] top-[-20%] w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+</div>
+</div>
+<!-- Metric Grid -->
+<div class="px-4 pb-2">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight mb-4">Today's Performance</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-primary text-xl">forum</span>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">+15%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-tight">Speech Attempts</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">24</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-blue-500 text-xl">record_voice_over</span>
+<span class="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">+2%</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-tight">Vowel Accuracy</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">88%</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-orange-500 text-xl">timer</span>
+<span class="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">-0.1s</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-tight">Phonation</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">1.2s</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-purple-500 text-xl">celebration</span>
+<span class="text-[10px] font-bold text-purple-500 bg-purple-500/10 px-2 py-0.5 rounded-full">New</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-tight">Game Rewards</p>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight">12</p>
+</div>
+</div>
+</div>
+<!-- Activity Chart Placeholder -->
+<div class="p-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h4 class="font-bold text-slate-900 dark:text-slate-100">Daily Activity</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">Speech intensity over time</p>
+</div>
+<select class="text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-background-light dark:bg-slate-900">
+<option>Today</option>
+<option>Yesterday</option>
+</select>
+</div>
+<!-- Mock Chart Visualization -->
+<div class="h-40 w-full flex items-end gap-2 px-2">
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[40%]"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg h-[60%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[30%]"></div>
+<div class="flex-1 bg-primary/60 rounded-t-lg h-[85%]"></div>
+<div class="flex-1 bg-primary rounded-t-lg h-[100%]"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg h-[55%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg h-[45%]"></div>
+</div>
+<div class="flex justify-between mt-2 px-1">
+<span class="text-[10px] text-slate-400">9AM</span>
+<span class="text-[10px] text-slate-400">12PM</span>
+<span class="text-[10px] text-slate-400">3PM</span>
+<span class="text-[10px] text-slate-400">6PM</span>
+<span class="text-[10px] text-slate-400">9PM</span>
+</div>
+</div>
+</div>
+<!-- Detailed Feedback List -->
+<div class="px-4 pb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight mb-4">AI Observations</h3>
+<div class="space-y-3">
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<p class="text-sm font-bold">Vowel 'ah' improved</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Consistent clarity detected during the "Farm Adventure" module.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<div class="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">priority_high</span>
+</div>
+<div>
+<p class="text-sm font-bold">Duration Alert</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Slight decrease in sustained phonation compared to last session.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe z-50">
+<div class="flex h-16 items-center justify-around px-2">
+<a class="flex flex-col items-center gap-1 text-slate-900 dark:text-white" href="#">
+<span class="material-symbols-outlined fill-[1]">dashboard</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">sports_esports</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Exercises</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined font-bold">analytics</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Reports</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Settings</span>
+</a>
+</div>
+</div>
+</div>
+</body></html>

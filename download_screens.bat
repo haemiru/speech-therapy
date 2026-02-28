@@ -1,0 +1,25 @@
+@echo off
+rmdir /s /q C:\Users\bsuha\APP\Speech-Therapy\stitch_screens
+mkdir C:\Users\bsuha\APP\Speech-Therapy\stitch_screens
+mkdir C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\1_oral_motor_training_game
+mkdir C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\2_vocalization_balloon_challenge
+mkdir C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\3_therapy_progress_dashboard
+mkdir C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\4_slp_management_hub
+
+echo Downloading Screen 1 (Oral Motor Training Game)...
+curl.exe -L "https://lh3.googleusercontent.com/aida/AOfcidXRtSu6NS1so2akDMMHkzw0nwA0dM7-9DENs1i66sALa7pGM6eNSVFgtkhoXJhYeyJE_90g9dGmR1JpI7m9pYZtozEi95HaW5yjWbCd5nIlO8Niu0fjZzc8kWeYcDdzybAazbw4nB70O1O00og2BXucrzPEC0ECBv4eOV8VYHIbCgExabAQ3_YMjhkAjHyIckePuU2TC1YkmX1-2JKp1WyhY96PMxPG7bQx1R0UjJOVqjXlxY6btOzvbHY" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\1_oral_motor_training_game\screenshot.png
+curl.exe -L "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzU3ODZiYWY2NWI4MTQ0OWY5NTViYzg0ODc0NDFiMDJiEgsSBxCT_cSaxQgYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTA0NzgwNTk0NDY0NzQxOTcy&filename=&opi=96797242" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\1_oral_motor_training_game\code.html
+
+echo Downloading Screen 2 (Vocalization Balloon Challenge)...
+curl.exe -L "https://lh3.googleusercontent.com/aida/AOfcidWXuQHYjQSomjxEyCXBIcPpmtQq51-d0iBsQWwohVDT3mj22dIOxUvDsaCaiJCACY5eC0WVp1vtB_8gAxKKhcXPcJUskaAePvA5FxbMgIXeEoP0FwDZDPJzIvPAivxQ2ejtPXyNjkSSGwuFhFVF_rR1ijyzwYlFeQbY3J0Bx8Nb97lcNiRafSTdqag7Zhv7BV2aQjNHEDRrz1r6PSw6huMeuY7yw5v8NtguRP1skgbW9HeP2WQ9grfXGoQ" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\2_vocalization_balloon_challenge\screenshot.png
+curl.exe -L "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sX2RlMjk1YWYwMjBhMDQ0NjdiMTkyZmJjMGVkZjFjMDgxEgsSBxCT_cSaxQgYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTA0NzgwNTk0NDY0NzQxOTcy&filename=&opi=89354086" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\2_vocalization_balloon_challenge\code.html
+
+echo Downloading Screen 3 (Therapy Progress Dashboard)...
+curl.exe -L "https://lh3.googleusercontent.com/aida/AOfcidVBQo40A06T-FiEm1rYZlO85J1a1zhBfvJWcFPfbpoOo27S6psppjDFNXzTyVIpimSMt2v9Ad0I90CY6HRkt8e7YqNid0rOP3FdfhwIWL9jRYKbzZgtUW4_i3WpXjNIng7Fa5sU1J1pPrrtAA9_QyQ0hvVeN-RxWJb3fUJwSNfGaTS4x7GniZtlvh3Z3_10egh3x6h7LEu9_bZoS8C2ICBU4GtDkCPuZAOZJrYxbOuuqtqt-IYfnFHw0Dc" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\3_therapy_progress_dashboard\screenshot.png
+curl.exe -L "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzgwMzViY2I4Y2ZhMzRkMGFhYTJlNDIwN2M5NTg4Nzk2EgsSBxCT_cSaxQgYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTA0NzgwNTk0NDY0NzQxOTcy&filename=&opi=89354086" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\3_therapy_progress_dashboard\code.html
+
+echo Downloading Screen 4 (SLP Management Hub)...
+curl.exe -L "https://lh3.googleusercontent.com/aida/AOfcidUiWrEPQRP4vLW9lT0N7oSSpi1RMC9Ir-vmy-9PIvFVRtQNu6kBK2eHtZoEphTbad_r3WdcpFcEkVlOyC4D_UjXg8Nm-rHqE7QtG-9wzWlYChSO_pNiwTDFka9o4AtuhCTX6VUstpBS6whgDCeuSvs6eeBIg02Zbm3LZriAQ_6Yiwzbrr-PL4KaD_2c3cucGMrvQIT0genCE8J4LkNmvMxvc5VrSEJmG_6BOslpyUHrJqdpMj0J41vzlAs" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\4_slp_management_hub\screenshot.png
+curl.exe -L "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sX2QwNGIyNWJkNWI3MDQ3MmM4MjVmY2ZmOTlmYjk2NDlhEgsSBxCT_cSaxQgYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTA0NzgwNTk0NDY0NzQxOTcy&filename=&opi=89354086" -o C:\Users\bsuha\APP\Speech-Therapy\stitch_screens\4_slp_management_hub\code.html
+
+echo Done.

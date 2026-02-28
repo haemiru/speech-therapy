@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2bee6c",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <title>Oral Motor Training: Puppy's Treat</title>
+    <style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
+    <div class="relative flex h-screen w-full flex-col">
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+            <div class="text-primary flex size-12 shrink-0 items-center">
+                <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1">pets</span>
+            </div>
+            <div class="flex-1 px-2">
+                <h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">Puppy's
+                    Treat</h2>
+                <p class="text-primary text-xs font-bold uppercase tracking-wider">Exercise: 'Ah' Sound</p>
+            </div>
+            <div class="flex w-12 items-center justify-end">
+                <button
+                    class="flex size-10 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex flex-col gap-2 p-4">
+            <div class="flex gap-6 justify-between items-end">
+                <p class="text-slate-700 dark:text-slate-300 text-base font-semibold">Treats Collected</p>
+                <p class="text-primary text-xl font-bold">6 <span class="text-sm text-slate-500">/ 10</span></p>
+            </div>
+            <div class="h-4 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full rounded-full bg-primary" style="width: 60%;"></div>
+            </div>
+        </div>
+        <div class="relative flex-1 flex flex-col items-center justify-center px-4 py-2">
+            <div class="bg-primary/20 border-2 border-primary/30 rounded-xl px-6 py-3 mb-6 relative">
+                <h4 class="text-slate-900 dark:text-slate-100 text-base font-bold text-center">Open your mouth wide like
+                    the puppy!</h4>
+                <div
+                    class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary/20 border-r-2 border-b-2 border-primary/30 rotate-45">
+                </div>
+            </div>
+            <div class="relative w-full max-w-[340px] aspect-square flex items-center justify-center">
+                <div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-[3rem] shadow-xl border-4 border-white dark:border-slate-800"
+                    data-alt="A high-quality, friendly, and cute white Pomeranian puppy looking at the camera with its mouth open and tongue sticking out in a playful 'Ah' shape, set against a soft, bright, and cheerful sunny park background"
+                    style='background-image: url("pomeranian.png");'>
+                </div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-8">
+                    <span
+                        class="material-symbols-outlined text-yellow-500 text-7xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
+                        style="font-variation-settings: 'FILL' 1">skeleton</span>
+                </div>
+            </div>
+            <div
+                class="absolute bottom-4 right-4 w-32 aspect-[3/4] rounded-2xl border-4 border-primary bg-slate-900 overflow-hidden shadow-2xl z-10">
+                <div class="w-full h-full bg-cover bg-center opacity-80"
+                    data-alt="Front camera view showing child's face with mouth detection overlay"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBvBVyec555aAPKO3er86FUfMgEqQNVtJvV8X9uRw6gQ4r5VXEdhbny48aMvWoFHR3JKArLET3mXd2eVOFUHRSYh5b8GFLXwj_BYkOSBWcIibC3eXOtqIzedN0x9x9maNeceOxBAaf328Dj3-zERoB4nLh1x0XhwH8DGD8OpXhL3wkJ5a6WbIaeoUUESXYV7ipNXVF45Cm9v1JzK7shgu1pL9Hnknjkc9lYuv0qnSzbv5_t_agk96kalmCSA9AO_5i3DGQ_elgRdlo");'>
+                </div>
+                <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/40 px-1.5 py-0.5 rounded-full">
+                    <div class="size-2 rounded-full bg-primary animate-pulse"></div>
+                    <span class="text-[8px] text-white font-bold uppercase">Live</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-center gap-8 p-8 pb-12">
+            <button class="flex flex-col items-center gap-2 group">
+                <div
+                    class="flex shrink-0 items-center justify-center rounded-full size-14 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-active:scale-95 transition-transform shadow-sm">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-tight">Quit</span>
+            </button>
+            <button class="flex flex-col items-center gap-2 group">
+                <div
+                    class="flex shrink-0 items-center justify-center rounded-full size-20 bg-primary text-slate-900 shadow-[0_0_25px_rgba(43,238,108,0.5)] group-active:scale-95 transition-transform">
+                    <span class="material-symbols-outlined text-4xl font-bold">videocam</span>
+                </div>
+                <span class="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide">Record</span>
+            </button>
+            <button class="flex flex-col items-center gap-2 group">
+                <div
+                    class="flex shrink-0 items-center justify-center rounded-full size-14 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-active:scale-95 transition-transform shadow-sm">
+                    <span class="material-symbols-outlined text-3xl">lightbulb</span>
+                </div>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-tight">Tips</span>
+            </button>
+        </div>
+        <div class="h-8 bg-background-light dark:bg-background-dark"></div>
+    </div>
+
+</body>
+
+</html>
