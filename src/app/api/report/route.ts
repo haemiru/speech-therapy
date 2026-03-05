@@ -3,7 +3,6 @@ import type { ReportRequest, ReportData, GameAnalysisSection } from '@/types/rep
 import type { SessionRecord } from '@/types/session';
 import type { GameId } from '@/types/game';
 
-export const maxDuration = 60;
 
 const GAME_NAMES: Record<string, string> = {
   'mouth-opening': '입 운동',
