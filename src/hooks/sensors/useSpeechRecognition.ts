@@ -59,7 +59,7 @@ export function useSpeechRecognition() {
 
     const recognition = new SpeechRecognitionClass();
     recognition.lang = 'ko-KR';
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
