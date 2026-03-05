@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BackButton } from '@/components/ui/BackButton';
 import { useHistoryStore } from '@/stores/useHistoryStore';
 import { useProfileStore } from '@/stores/useProfileStore';
@@ -37,8 +37,9 @@ export default function ReportPage() {
     return () => clearInterval(interval);
   }, [state]);
 
-  const gameRecords = records.filter(
-    (r) => r.gameId !== 'my-records' && r.gameId !== 'report'
+  const gameRecords = useMemo(
+    () => records.filter((r) => r.gameId !== 'my-records' && r.gameId !== 'report'),
+    [records]
   );
 
   const generate = useCallback(async () => {
