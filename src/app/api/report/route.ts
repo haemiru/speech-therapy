@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
 import type { ReportRequest, ReportData, GameAnalysisSection } from '@/types/report';
 import type { SessionRecord } from '@/types/session';
 import type { GameId } from '@/types/game';
@@ -167,17 +166,30 @@ export async function POST(request: Request) {
 
     const prompt = buildPrompt(body);
 
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-preview-05-20',
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 2048 },
-        temperature: 0.7,
-      },
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const geminiRes = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          thinkingConfig: { thinkingBudget: 2048 },
+        },
+      }),
     });
 
-    const text = response.text ?? '';
+    if (!geminiRes.ok) {
+      const errBody = await geminiRes.text();
+      throw new Error(`Gemini API ${geminiRes.status}: ${errBody.slice(0, 200)}`);
+    }
+
+    const geminiData = await geminiRes.json();
+    const parts = geminiData?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts
+      .filter((p: { text?: string }) => p.text)
+      .map((p: { text: string }) => p.text)
+      .join('');
 
     const parsed = parseReportFromText(text);
     if (!parsed) {
