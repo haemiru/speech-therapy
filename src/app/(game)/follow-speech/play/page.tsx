@@ -339,6 +339,18 @@ export default function FollowSpeechPlayPage() {
               threshold={threshold}
               className="mb-3"
             />
+
+            {/* 인식 끊김 → 다시 말하기 버튼 */}
+            {speechRecognition.needsRetry && (
+              <button
+                type="button"
+                onClick={speechRecognition.retry}
+                className="mx-auto flex items-center gap-2 px-6 py-3 rounded-full bg-green-500 text-white font-bold text-base active:scale-95 transition-transform animate-pulse"
+              >
+                <span className="text-xl">🎤</span>
+                다시 말하기
+              </button>
+            )}
           </>
         )}
 

@@ -42,6 +42,7 @@ export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [needsRetry, setNeedsRetry] = useState(false);
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const targetWordRef = useRef('');
@@ -59,7 +60,7 @@ export function useSpeechRecognition() {
 
     const recognition = new SpeechRecognitionClass();
     recognition.lang = 'ko-KR';
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
@@ -95,14 +96,9 @@ export function useSpeechRecognition() {
 
     recognition.onend = () => {
       setIsListening(false);
-      // 라운드 진행 중이면 자동 재시작 (재시도 허용)
+      // 라운드 진행 중이면 재시도 필요 표시 (사용자 제스처로 재시작)
       if (shouldRestartRef.current) {
-        try {
-          recognition.start();
-          setIsListening(true);
-        } catch {
-          // 이미 시작된 경우 무시
-        }
+        setNeedsRetry(true);
       }
     };
 
@@ -120,7 +116,21 @@ export function useSpeechRecognition() {
     shouldRestartRef.current = true;
     setTranscript('');
     setError(null);
+    setNeedsRetry(false);
 
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+    } catch {
+      // 이미 시작된 경우 무시
+    }
+  }, []);
+
+  // 사용자 제스처(탭)로 인식 재시작
+  const retry = useCallback(() => {
+    if (!recognitionRef.current || !shouldRestartRef.current) return;
+
+    setNeedsRetry(false);
     try {
       recognitionRef.current.start();
       setIsListening(true);
@@ -132,6 +142,7 @@ export function useSpeechRecognition() {
   const stopListening = useCallback(() => {
     shouldRestartRef.current = false;
     onResultRef.current = null;
+    setNeedsRetry(false);
 
     if (recognitionRef.current) {
       try {
@@ -146,10 +157,12 @@ export function useSpeechRecognition() {
   return {
     isSupported,
     isListening,
+    needsRetry,
     transcript,
     error,
     init,
     startListening,
     stopListening,
+    retry,
   };
 }
