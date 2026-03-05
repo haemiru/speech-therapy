@@ -146,16 +146,10 @@ export default function FollowSpeechPlayPage() {
 
     setPhase('playing');
 
-    // 동기적으로 TTS + 인식 모두 시작 (사용자 제스처 컨텍스트 유지)
+    // 동기적으로 TTS + 인식 + 타이머 모두 시작 (사용자 제스처 컨텍스트 유지)
     tts.speak(prompt.text).catch(() => {});
     speechRecognition.startListening(prompt.text, handleRecognitionResult);
-
-    // 타이머는 TTS 들을 시간 확보 후 시작 (약 2.5초)
-    setTimeout(() => {
-      if (phaseRef.current === 'playing') {
-        timer.start();
-      }
-    }, 2500);
+    timer.start();
   }, [prompts, currentRound, tts, speechRecognition, judgment, timer, handleRecognitionResult]);
 
   // Wire up the success ref
