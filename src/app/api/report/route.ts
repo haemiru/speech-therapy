@@ -167,7 +167,7 @@ export async function POST(request: Request) {
 
     const prompt = buildPrompt(body);
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -175,7 +175,6 @@ export async function POST(request: Request) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
-          thinkingConfig: { thinkingBudget: 2048 },
         },
       }),
     });
