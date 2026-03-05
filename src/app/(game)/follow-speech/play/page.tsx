@@ -127,33 +127,37 @@ export default function FollowSpeechPlayPage() {
         play('countdown');
       } else {
         clearInterval(interval);
-        setPhase('playing');
-        startRound();
+        // 카운트다운 후 탭 대기 화면으로 전환
+        setPhase('waiting');
       }
     }, 1000);
   }, [play]);
 
-  const startRound = useCallback(async () => {
+  // 사용자가 탭하면 TTS 재생 + 인식 시작 (사용자 제스처 컨텍스트 필요)
+  const handleTapToStart = useCallback(async () => {
+    const prompt = prompts[currentRound - 1];
+    if (!prompt) return;
+
     peakValueRef.current = 0;
     setCurrentSimilarity(0);
     setCurrentTranscript('');
     judgment.reset();
     timer.reset();
 
-    const prompt = prompts[currentRound - 1];
-    if (!prompt) return;
+    setPhase('playing');
 
-    // TTS 재생 (fire-and-forget, 자동재생 차단 시에도 계속 진행)
-    tts.speak(prompt.text).catch(() => {});
+    // TTS 재생 (사용자 탭 컨텍스트이므로 소리 재생 가능)
+    try {
+      await tts.speak(prompt.text);
+    } catch {
+      // TTS 실패해도 계속 진행
+    }
 
-    // 인식과 타이머를 TTS와 독립적으로 바로 시작
-    // (짧은 지연으로 TTS 출력 후 말할 시간 확보)
-    setTimeout(() => {
-      if (phaseRef.current === 'playing') {
-        speechRecognition.startListening(prompt.text, handleRecognitionResult);
-        timer.start();
-      }
-    }, 2000);
+    // TTS 후 인식 시작
+    if (phaseRef.current === 'playing') {
+      speechRecognition.startListening(prompt.text, handleRecognitionResult);
+      timer.start();
+    }
   }, [prompts, currentRound, tts, speechRecognition, judgment, timer, handleRecognitionResult]);
 
   // Wire up the success ref
@@ -211,21 +215,12 @@ export default function FollowSpeechPlayPage() {
         if (restTime <= 0) {
           clearInterval(restInterval);
           setCurrentRound((r) => r + 1);
-          setPhase('playing');
-          // startRound will be triggered by currentRound change
+          // 다음 라운드도 탭 대기 화면으로
+          setPhase('waiting');
         }
       }, 1000);
     }
   }, [currentRound, totalRounds]);
-
-  // Start round when currentRound changes during playing phase
-  const prevRoundRef = useRef(currentRound);
-  useEffect(() => {
-    if (currentRound !== prevRoundRef.current && phase === 'playing') {
-      prevRoundRef.current = currentRound;
-      startRound();
-    }
-  }, [currentRound, phase, startRound]);
 
   const finishGame = useCallback(() => {
     setPhase('finished');
@@ -394,6 +389,25 @@ export default function FollowSpeechPlayPage() {
           successCount={successCount}
         />
       </div>
+
+      {/* Waiting overlay — 사용자 탭으로 TTS + 인식 시작 */}
+      {phase === 'waiting' && currentPrompt && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
+          <button
+            type="button"
+            onClick={handleTapToStart}
+            className="bg-white rounded-3xl p-8 mx-8 text-center shadow-xl active:scale-95 transition-transform"
+          >
+            <div className="text-7xl mb-3">{currentPrompt.emoji}</div>
+            <div className="text-4xl font-black text-gray-800 mb-4">{currentPrompt.text}</div>
+            <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-green-500 text-white font-bold text-lg">
+              <span className="text-2xl">🔊</span>
+              탭하여 듣기
+            </div>
+            <p className="text-sm text-gray-400 mt-3">듣고 따라 말해봐!</p>
+          </button>
+        </div>
+      )}
 
       {/* Overlays */}
       {phase === 'countdown' && (
