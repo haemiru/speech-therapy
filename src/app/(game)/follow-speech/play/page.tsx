@@ -356,10 +356,17 @@ export default function FollowSpeechPlayPage() {
           </>
         )}
 
-        {/* Error display */}
+        {/* Error display - 음성 인식 오류 시 전체 화면 안내 */}
         {speechRecognition.error && (
-          <div className="bg-red-50 text-red-600 rounded-xl p-3 mb-3 text-sm text-center">
-            {speechRecognition.error}
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-4">
+            <div className="text-6xl">😢</div>
+            <p className="text-lg font-bold text-gray-700">{speechRecognition.error}</p>
+            <button
+              onClick={() => router.push('/home')}
+              className="mt-2 px-6 py-3 bg-sky-500 text-white font-bold rounded-xl active:scale-95 transition-transform"
+            >
+              홈으로 돌아가기
+            </button>
           </div>
         )}
       </div>

@@ -88,6 +88,8 @@ export function useSpeechRecognition() {
       }
       if (event.error === 'not-allowed') {
         setError('마이크 권한이 필요합니다. 브라우저 설정에서 마이크를 허용해주세요.');
+      } else if (event.error === 'service-not-allowed' || event.error === 'language-not-supported') {
+        setError('이 브라우저는 음성 인식을 지원하지 않아요. Chrome 브라우저를 사용해주세요.');
       }
     };
 
