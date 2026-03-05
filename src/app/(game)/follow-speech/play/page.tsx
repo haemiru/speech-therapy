@@ -134,7 +134,7 @@ export default function FollowSpeechPlayPage() {
   }, [play]);
 
   // 사용자가 탭하면 TTS 재생 + 인식 시작 (사용자 제스처 컨텍스트 필요)
-  const handleTapToStart = useCallback(async () => {
+  const handleTapToStart = useCallback(() => {
     const prompt = prompts[currentRound - 1];
     if (!prompt) return;
 
@@ -146,18 +146,16 @@ export default function FollowSpeechPlayPage() {
 
     setPhase('playing');
 
-    // TTS 재생 (사용자 탭 컨텍스트이므로 소리 재생 가능)
-    try {
-      await tts.speak(prompt.text);
-    } catch {
-      // TTS 실패해도 계속 진행
-    }
+    // 동기적으로 TTS + 인식 모두 시작 (사용자 제스처 컨텍스트 유지)
+    tts.speak(prompt.text).catch(() => {});
+    speechRecognition.startListening(prompt.text, handleRecognitionResult);
 
-    // TTS 후 인식 시작
-    if (phaseRef.current === 'playing') {
-      speechRecognition.startListening(prompt.text, handleRecognitionResult);
-      timer.start();
-    }
+    // 타이머는 TTS 들을 시간 확보 후 시작 (약 2.5초)
+    setTimeout(() => {
+      if (phaseRef.current === 'playing') {
+        timer.start();
+      }
+    }, 2500);
   }, [prompts, currentRound, tts, speechRecognition, judgment, timer, handleRecognitionResult]);
 
   // Wire up the success ref
