@@ -7,10 +7,11 @@ interface PromptCardProps {
   prompt: WordPrompt;
   isListening: boolean;
   onPlayTTS: () => void;
+  ttsAvailable?: boolean;
   className?: string;
 }
 
-export function PromptCard({ prompt, isListening, onPlayTTS, className }: PromptCardProps) {
+export function PromptCard({ prompt, isListening, onPlayTTS, ttsAvailable = true, className }: PromptCardProps) {
   return (
     <div className={cn(
       'flex flex-col items-center justify-center py-6 px-4 rounded-3xl transition-all duration-300',
@@ -34,15 +35,21 @@ export function PromptCard({ prompt, isListening, onPlayTTS, className }: Prompt
         {prompt.text}
       </div>
 
-      {/* 다시 듣기 버튼 */}
-      <button
-        type="button"
-        onClick={onPlayTTS}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-sky-100 text-sky-600 font-bold text-sm active:scale-95 transition-transform"
-      >
-        <span className="text-lg">🔊</span>
-        다시 듣기
-      </button>
+      {/* 다시 듣기 버튼 / TTS 미지원 안내 */}
+      {ttsAvailable ? (
+        <button
+          type="button"
+          onClick={onPlayTTS}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-sky-100 text-sky-600 font-bold text-sm active:scale-95 transition-transform"
+        >
+          <span className="text-lg">🔊</span>
+          다시 듣기
+        </button>
+      ) : (
+        <p className="text-xs text-gray-400 mt-1">
+          위 글자를 소리내어 따라 말해보세요!
+        </p>
+      )}
     </div>
   );
 }

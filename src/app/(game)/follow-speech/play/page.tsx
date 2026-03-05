@@ -334,6 +334,7 @@ export default function FollowSpeechPlayPage() {
               prompt={currentPrompt}
               isListening={speechRecognition.isListening}
               onPlayTTS={handlePlayTTS}
+              ttsAvailable={tts.isSupported}
               className="mb-3"
             />
 
