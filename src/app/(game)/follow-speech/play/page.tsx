@@ -143,18 +143,17 @@ export default function FollowSpeechPlayPage() {
     const prompt = prompts[currentRound - 1];
     if (!prompt) return;
 
-    // TTS 재생 → 완료 후 인식 시작
-    try {
-      await tts.speak(prompt.text);
-    } catch {
-      // TTS 실패해도 계속 진행
-    }
+    // TTS 재생 (fire-and-forget, 자동재생 차단 시에도 계속 진행)
+    tts.speak(prompt.text).catch(() => {});
 
-    // TTS 후 인식 시작
-    if (phaseRef.current === 'playing') {
-      speechRecognition.startListening(prompt.text, handleRecognitionResult);
-      timer.start();
-    }
+    // 인식과 타이머를 TTS와 독립적으로 바로 시작
+    // (짧은 지연으로 TTS 출력 후 말할 시간 확보)
+    setTimeout(() => {
+      if (phaseRef.current === 'playing') {
+        speechRecognition.startListening(prompt.text, handleRecognitionResult);
+        timer.start();
+      }
+    }, 2000);
   }, [prompts, currentRound, tts, speechRecognition, judgment, timer, handleRecognitionResult]);
 
   // Wire up the success ref

@@ -41,6 +41,23 @@ export function useTTS() {
 
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
+
+      // Timeout: if TTS doesn't fire onend/onerror within 5s (e.g. autoplay blocked), resolve anyway
+      const timeout = setTimeout(() => {
+        setIsSpeaking(false);
+        resolve();
+      }, 5000);
+
+      const origOnEnd = utterance.onend;
+      const origOnError = utterance.onerror;
+      utterance.onend = (ev) => {
+        clearTimeout(timeout);
+        origOnEnd?.call(utterance, ev);
+      };
+      utterance.onerror = (ev) => {
+        clearTimeout(timeout);
+        origOnError?.call(utterance, ev);
+      };
     });
   }, [isSupported]);
 
