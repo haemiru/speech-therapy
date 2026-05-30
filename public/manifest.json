@@ -1,0 +1,9 @@
+{
+  "name": "소리야 놀자!",
+  "short_name": "소리야놀자",
+  "description": "발달장애 아동을 위한 언어치료 게임",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e0f2fe",
+  "theme_color": "#38bdf8"
+}

@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Noto Sans KR', sans-serif;
+
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-cream: #fef9c3;
+  --color-success: #22c55e;
+  --color-reward: #facc15;
+  --color-warning: #fb923c;
+  --color-progress: #3b82f6;
+  --color-text-primary: #374151;
+  --color-text-secondary: #6b7280;
+
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-wave: wave 1s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 1.5s ease-out infinite;
+  --animate-sparkle: sparkle 1.5s ease-in-out infinite;
+  --animate-bounce-in: bounce-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-confetti: confetti-fall 2s ease-in-out forwards;
+  --animate-gauge-fill: gauge-fill 1s ease-out forwards;
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-pop: pop 0.3s ease-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes gauge-fill {
+  0% { width: 0%; }
+  100% { width: var(--gauge-target, 0%); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes clap {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes rise {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-200px); }
+  100% { transform: translateY(0); }
+}
+
+/* Base styles */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--color-text-primary);
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Prevent overscroll on iOS */
+html, body {
+  overflow: hidden;
+  height: 100%;
+  height: 100dvh;
+}
+
+#__next {
+  height: 100%;
+  height: 100dvh;
+}
+
+/* Utility classes for game */
+@utility gauge-transition {
+  transition: width 0.15s ease-out;
+}
+
+@utility touch-target {
+  min-width: 48px;
+  min-height: 48px;
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}

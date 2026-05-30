@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>소리야 놀자! — UI 프로토타입</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans KR', sans-serif; }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      border-radius: 40px;
+      border: 8px solid #1f2937;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .screen { display: none; width: 100%; height: 100%; position: relative; overflow-y: auto; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    /* Animations */
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes wave { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-15deg); } }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
+    @keyframes sparkle { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+    @keyframes rise { 0% { bottom: 80px; } 50% { bottom: 280px; } 100% { bottom: 80px; } }
+    @keyframes gauge-fill { 0% { width: 0%; } 50% { width: 85%; } 70% { width: 78%; } 100% { width: 72%; } }
+    @keyframes clap { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+    }
+    @keyframes slide-up { 0% { transform: translateY(30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes balloon-float {
+      0% { transform: translateY(0) rotate(-2deg); }
+      33% { transform: translateY(-20px) rotate(2deg); }
+      66% { transform: translateY(-10px) rotate(-1deg); }
+      100% { transform: translateY(0) rotate(-2deg); }
+    }
+    @keyframes mouth-open {
+      0%,100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.6); }
+    }
+    @keyframes cloud-move {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-30px); }
+    }
+    @keyframes volume-bar {
+      0% { height: 20%; }
+      25% { height: 70%; }
+      50% { height: 90%; }
+      75% { height: 50%; }
+      100% { height: 20%; }
+    }
+    @keyframes star-pop {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+      100% { transform: scale(1) rotate(360deg); opacity: 1; }
+    }
+    @keyframes graph-draw {
+      0% { stroke-dashoffset: 300; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes tail-wag {
+      0%,100% { transform: rotate(-20deg); }
+      50% { transform: rotate(20deg); }
+    }
+    @keyframes egg-wobble {
+      0%,100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+    @keyframes puppy-bounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes heart-float {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-30px) scale(1.5); }
+    }
+    @keyframes grow-pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(251,191,36,0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .float { animation: float 3s ease-in-out infinite; }
+    .wave { animation: wave 1s ease-in-out infinite; }
+    .sparkle { animation: sparkle 1.5s ease-in-out infinite; }
+
+    .nav-btn { transition: all 0.2s; }
+    .nav-btn:hover { transform: scale(1.05); }
+    .nav-btn.active-nav { background: #3B82F6; color: white; }
+
+    .game-card {
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .game-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: confetti-fall 2.5s ease-in-out infinite;
+    }
+
+    ::-webkit-scrollbar { width: 0; }
+  </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col items-center py-8">
+
+  <!-- Navigation -->
+  <div class="mb-6 text-center">
+    <h1 class="text-white text-2xl font-bold mb-1">소리야 놀자! — UI 프로토타입</h1>
+    <p class="text-gray-400 text-sm mb-4">🟣 이하늘 디자이너 제작</p>
+    <div class="flex gap-2 flex-wrap justify-center">
+      <button onclick="showScreen('splash')" class="nav-btn active-nav px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">스플래시</button>
+      <button onclick="showScreen('home')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">홈</button>
+      <button onclick="showScreen('camera')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">카메라 허용</button>
+      <button onclick="showScreen('game1')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">입 벌리기</button>
+      <button onclick="showScreen('game2')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">소리 열기구</button>
+      <button onclick="showScreen('result')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">결과/보상</button>
+      <button onclick="showScreen('puppy')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">🐾 내 강아지</button>
+      <button onclick="showScreen('dashboard')" class="nav-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-700 text-gray-300">부모 대시보드</button>
+    </div>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame bg-white">
+
+    <!-- 1. Splash Screen -->
+    <div id="screen-splash" class="screen active bg-gradient-to-b from-sky-200 via-sky-100 to-amber-50">
+      <div class="flex-1 flex flex-col items-center justify-center px-8">
+        <!-- Character -->
+        <div class="float mb-6">
+          <div class="w-32 h-32 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full flex items-center justify-center shadow-lg relative">
+            <div class="text-6xl">🐥</div>
+            <div class="absolute -right-2 -top-2 text-2xl wave">👋</div>
+          </div>
+        </div>
+        <h1 class="text-3xl font-black text-gray-800 mb-2">소리야 놀자!</h1>
+        <p class="text-gray-500 text-sm mb-8">재미있는 소리 놀이 시간</p>
+        <!-- Loading dots -->
+        <div class="flex gap-2">
+          <div class="w-3 h-3 bg-blue-400 rounded-full" style="animation: sparkle 1s ease-in-out infinite;"></div>
+          <div class="w-3 h-3 bg-green-400 rounded-full" style="animation: sparkle 1s ease-in-out 0.2s infinite;"></div>
+          <div class="w-3 h-3 bg-yellow-400 rounded-full" style="animation: sparkle 1s ease-in-out 0.4s infinite;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Home Screen -->
+    <div id="screen-home" class="screen bg-gradient-to-b from-sky-100 to-blue-50">
+      <!-- Header -->
+      <div class="px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between mb-1">
+          <div>
+            <p class="text-gray-400 text-xs">안녕, 민준아! 👋</p>
+            <h2 class="text-xl font-bold text-gray-800">오늘도 놀아볼까?</h2>
+          </div>
+          <div class="w-10 h-10 bg-gradient-to-br from-orange-300 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+            <span class="text-lg">🐥</span>
+          </div>
+        </div>
+        <!-- Streak -->
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl px-4 py-2.5 flex items-center gap-2 border border-amber-200">
+          <span class="text-lg">🔥</span>
+          <span class="text-sm font-medium text-amber-700">3일 연속 참여 중!</span>
+          <div class="flex ml-auto gap-0.5">
+            <span class="text-xs">⭐⭐⭐</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Puppy Widget -->
+      <div onclick="showScreen('puppy')" class="mx-5 mt-1 mb-2 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-3 border-2 border-amber-200 cursor-pointer hover:shadow-md transition-all relative overflow-hidden" style="animation: grow-pulse 3s ease-in-out infinite;">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-100/40 rounded-full"></div>
+        <div class="flex items-center gap-3 relative z-10">
+          <!-- Mini Puppy Image - Stage 3 -->
+          <div class="w-14 h-14 flex-shrink-0 relative">
+            <img src="assets/puppy.png" alt="뭉치" class="w-full h-full object-contain" style="animation: puppy-bounce 2s ease-in-out infinite;">
+            <div class="absolute -top-1 -right-1 text-xs" style="animation: heart-float 2s ease-out infinite;">💕</div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="font-bold text-sm text-gray-800">뭉치</span>
+              <span class="text-[10px] bg-amber-200 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Lv.3 꼬마 멍멍</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="flex-1 h-2 bg-amber-100 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full" style="width: 60%;"></div>
+              </div>
+              <span class="text-[10px] text-amber-600 font-medium">18/30 ⭐</span>
+            </div>
+            <p class="text-[10px] text-amber-500 mt-0.5">다음 성장까지 별 12개!</p>
+          </div>
+          <span class="text-gray-300 text-lg">›</span>
+        </div>
+      </div>
+
+      <!-- Game Cards -->
+      <div class="flex-1 px-5 py-3">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">게임 선택</p>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Game 1: Mouth -->
+          <div class="game-card bg-white rounded-2xl p-4 shadow-md border-2 border-green-200 relative overflow-hidden" onclick="showScreen('camera')">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-green-100 rounded-bl-full opacity-50"></div>
+            <div class="w-14 h-14 bg-gradient-to-br from-green-300 to-green-500 rounded-2xl flex items-center justify-center mb-3 shadow-sm">
+              <span class="text-3xl">👄</span>
+            </div>
+            <p class="font-bold text-gray-800 text-sm">입 벌리기</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">구강 운동</p>
+            <div class="flex mt-2 gap-0.5">
+              <div class="w-4 h-1 bg-green-400 rounded-full"></div>
+              <div class="w-4 h-1 bg-green-400 rounded-full"></div>
+              <div class="w-4 h-1 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+          <!-- Game 2: Balloon -->
+          <div class="game-card bg-white rounded-2xl p-4 shadow-md border-2 border-blue-200 relative overflow-hidden" onclick="showScreen('game2')">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-blue-100 rounded-bl-full opacity-50"></div>
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-300 to-blue-500 rounded-2xl flex items-center justify-center mb-3 shadow-sm">
+              <span class="text-3xl">🎈</span>
+            </div>
+            <p class="font-bold text-gray-800 text-sm">소리 열기구</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">발성 훈련</p>
+            <div class="flex mt-2 gap-0.5">
+              <div class="w-4 h-1 bg-blue-400 rounded-full"></div>
+              <div class="w-4 h-1 bg-gray-200 rounded-full"></div>
+              <div class="w-4 h-1 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+          <!-- Game 3: Speech -->
+          <div class="game-card bg-white rounded-2xl p-4 shadow-md border-2 border-purple-200 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-purple-100 rounded-bl-full opacity-50"></div>
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-300 to-purple-500 rounded-2xl flex items-center justify-center mb-3 shadow-sm relative">
+              <span class="text-3xl">🗣️</span>
+              <div class="absolute -top-1 -right-1 bg-gray-400 rounded-full w-5 h-5 flex items-center justify-center">
+                <span class="text-[10px]">🔒</span>
+              </div>
+            </div>
+            <p class="font-bold text-gray-800 text-sm">따라 말하기</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">조음 훈련</p>
+            <p class="text-[9px] text-purple-400 mt-2 font-medium">Level 3 달성 시 열림</p>
+          </div>
+          <!-- My Record -->
+          <div class="game-card bg-white rounded-2xl p-4 shadow-md border-2 border-amber-200 relative overflow-hidden" onclick="showScreen('dashboard')">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-amber-100 rounded-bl-full opacity-50"></div>
+            <div class="w-14 h-14 bg-gradient-to-br from-amber-300 to-amber-500 rounded-2xl flex items-center justify-center mb-3 shadow-sm">
+              <span class="text-3xl">📊</span>
+            </div>
+            <p class="font-bold text-gray-800 text-sm">나의 기록</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">성장 확인</p>
+            <p class="text-[9px] text-amber-500 mt-2 font-medium">이번 주 +15% ↑</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="bg-white border-t border-gray-100 px-4 py-3 flex justify-around">
+        <button class="flex flex-col items-center gap-1">
+          <span class="text-xl">🏠</span>
+          <span class="text-[10px] font-bold text-blue-500">홈</span>
+        </button>
+        <button class="flex flex-col items-center gap-1" onclick="showScreen('puppy')">
+          <span class="text-xl">🐾</span>
+          <span class="text-[10px] text-gray-400">강아지</span>
+        </button>
+        <button class="flex flex-col items-center gap-1" onclick="showScreen('dashboard')">
+          <span class="text-xl">📈</span>
+          <span class="text-[10px] text-gray-400">기록</span>
+        </button>
+        <button class="flex flex-col items-center gap-1">
+          <span class="text-xl">⚙️</span>
+          <span class="text-[10px] text-gray-400">설정</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Camera Permission Screen -->
+    <div id="screen-camera" class="screen bg-gradient-to-b from-green-50 to-emerald-50">
+      <div class="px-5 pt-5">
+        <button onclick="showScreen('home')" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-gray-500">←</button>
+      </div>
+      <div class="flex-1 flex flex-col items-center justify-center px-8">
+        <!-- Character with camera -->
+        <div class="float mb-6 relative">
+          <div class="w-36 h-36 bg-gradient-to-br from-green-200 to-emerald-300 rounded-3xl flex items-center justify-center shadow-lg">
+            <span class="text-7xl">📷</span>
+          </div>
+          <div class="absolute -bottom-3 -right-3 w-16 h-16 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full flex items-center justify-center shadow-md">
+            <span class="text-3xl">🐥</span>
+          </div>
+        </div>
+        <!-- Speech bubble -->
+        <div class="bg-white rounded-2xl px-6 py-4 shadow-md mb-4 relative max-w-[280px]">
+          <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45"></div>
+          <p class="text-lg font-bold text-gray-800 text-center">카메라를 켜서<br>내 얼굴을 보여줘! 😊</p>
+        </div>
+        <div class="flex items-center gap-1.5 mb-6">
+          <span class="text-sm">🔊</span>
+          <div class="flex gap-0.5">
+            <div class="w-1 h-3 bg-green-400 rounded-full" style="animation: volume-bar 1s ease-in-out infinite;"></div>
+            <div class="w-1 h-4 bg-green-400 rounded-full" style="animation: volume-bar 1s ease-in-out 0.1s infinite;"></div>
+            <div class="w-1 h-5 bg-green-500 rounded-full" style="animation: volume-bar 1s ease-in-out 0.2s infinite;"></div>
+            <div class="w-1 h-4 bg-green-400 rounded-full" style="animation: volume-bar 1s ease-in-out 0.3s infinite;"></div>
+            <div class="w-1 h-3 bg-green-400 rounded-full" style="animation: volume-bar 1s ease-in-out 0.4s infinite;"></div>
+          </div>
+          <span class="text-[10px] text-gray-400">음성 안내 재생 중</span>
+        </div>
+        <!-- Parent notice -->
+        <div class="bg-gray-50 rounded-xl px-4 py-3 mb-6 w-full border border-gray-200">
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            👨‍👩‍👧 <strong class="text-gray-500">부모님께</strong><br>
+            카메라로 아이의 입 움직임을 인식합니다.<br>
+            영상은 기기에서만 처리되며 <strong class="text-gray-500">서버에 저장되지 않습니다.</strong>
+          </p>
+        </div>
+        <!-- Button -->
+        <button onclick="showScreen('game1')" class="w-full bg-gradient-to-r from-green-400 to-green-500 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95">
+          📷 카메라 켜기!
+        </button>
+      </div>
+      <div class="h-8"></div>
+    </div>
+
+    <!-- 4. Game 1: Mouth Opening Game -->
+    <div id="screen-game1" class="screen bg-gradient-to-b from-sky-100 to-green-50">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur">
+        <button onclick="showScreen('home')" class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-sm">←</button>
+        <h3 class="font-bold text-gray-700 text-sm">👄 입 벌리기 게임</h3>
+        <button class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-sm">⏸</button>
+      </div>
+
+      <!-- Target area -->
+      <div class="mx-4 mt-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-200 text-center">
+        <p class="text-xs text-green-600 font-medium mb-2">🎯 목표 동작</p>
+        <p class="text-xl font-bold text-gray-800 mb-2">입을 크~게 벌려봐!</p>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-inner">
+          <span class="text-4xl" style="animation: mouth-open 2s ease-in-out infinite;">👄</span>
+        </div>
+      </div>
+
+      <!-- Camera area -->
+      <div class="mx-4 mt-3 bg-gray-800 rounded-2xl overflow-hidden relative" style="height: 240px;">
+        <!-- Simulated camera feed -->
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+          <div class="text-center">
+            <div class="w-24 h-24 border-3 border-green-400 rounded-full mx-auto mb-2 flex items-center justify-center relative">
+              <span class="text-5xl">😮</span>
+              <!-- Face mesh dots -->
+              <div class="absolute w-1.5 h-1.5 bg-green-400 rounded-full" style="top: 30%; left: 30%; animation: sparkle 2s infinite;"></div>
+              <div class="absolute w-1.5 h-1.5 bg-green-400 rounded-full" style="top: 30%; right: 30%; animation: sparkle 2s 0.3s infinite;"></div>
+              <div class="absolute w-1.5 h-1.5 bg-green-400 rounded-full" style="bottom: 25%; left: 50%; transform: translateX(-50%); animation: sparkle 2s 0.5s infinite;"></div>
+            </div>
+            <p class="text-green-400 text-xs font-medium">얼굴 인식 중...</p>
+          </div>
+        </div>
+        <!-- Gauge overlay -->
+        <div class="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-gray-300">입 벌림 정도</span>
+            <span class="text-sm font-bold text-green-400">78%</span>
+          </div>
+          <div class="h-2.5 bg-gray-700 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-green-400 to-green-300 rounded-full" style="animation: gauge-fill 3s ease-in-out infinite;"></div>
+          </div>
+          <!-- Target line -->
+          <div class="relative h-0">
+            <div class="absolute right-[28%] -top-2.5 w-0.5 h-2.5 bg-yellow-400"></div>
+            <span class="absolute right-[20%] -top-1 text-[8px] text-yellow-400">목표</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="mx-4 mt-3 bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-600">오늘 진행</span>
+          <span class="text-sm font-bold text-gray-800">3 / 5</span>
+        </div>
+        <div class="flex gap-1.5 mb-2">
+          <div class="flex-1 text-center" style="animation: star-pop 0.5s ease-out forwards;">⭐</div>
+          <div class="flex-1 text-center" style="animation: star-pop 0.5s ease-out 0.1s forwards;">⭐</div>
+          <div class="flex-1 text-center" style="animation: star-pop 0.5s ease-out 0.2s forwards;">⭐</div>
+          <div class="flex-1 text-center text-gray-300">☆</div>
+          <div class="flex-1 text-center text-gray-300">☆</div>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style="width: 60%;"></div>
+        </div>
+      </div>
+
+      <!-- Encouragement -->
+      <div class="mx-4 mt-3 mb-4 text-center">
+        <div class="inline-block bg-yellow-50 border border-yellow-200 rounded-full px-4 py-1.5">
+          <span class="text-sm text-yellow-700">💪 조금만 더 벌려볼까?</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Game 2: Sound Balloon -->
+    <div id="screen-game2" class="screen bg-gradient-to-b from-sky-300 via-sky-200 to-sky-100">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between px-4 py-3 bg-white/60 backdrop-blur">
+        <button onclick="showScreen('home')" class="w-9 h-9 bg-white/80 rounded-full flex items-center justify-center text-gray-500 text-sm">←</button>
+        <h3 class="font-bold text-gray-700 text-sm">🎈 소리 열기구</h3>
+        <button class="w-9 h-9 bg-white/80 rounded-full flex items-center justify-center text-gray-500 text-sm">⏸</button>
+      </div>
+
+      <!-- Sky scene -->
+      <div class="flex-1 relative overflow-hidden">
+        <!-- Clouds -->
+        <div class="absolute top-4 left-4 text-4xl opacity-60" style="animation: cloud-move 8s ease-in-out infinite alternate;">☁️</div>
+        <div class="absolute top-16 right-8 text-3xl opacity-40" style="animation: cloud-move 6s ease-in-out 1s infinite alternate;">☁️</div>
+        <div class="absolute top-32 left-12 text-2xl opacity-30" style="animation: cloud-move 10s ease-in-out 2s infinite alternate;">☁️</div>
+
+        <!-- Target clouds (goal lines) -->
+        <div class="absolute left-0 right-0 top-12 flex items-center px-4">
+          <div class="flex-1 border-t border-dashed border-sky-400/40"></div>
+          <span class="text-[10px] text-sky-500 mx-2 bg-sky-200/50 px-2 py-0.5 rounded-full">목표 3</span>
+          <span class="text-lg">☁️</span>
+        </div>
+        <div class="absolute left-0 right-0 top-32 flex items-center px-4">
+          <div class="flex-1 border-t border-dashed border-sky-400/30"></div>
+          <span class="text-[10px] text-sky-500 mx-2 bg-sky-200/50 px-2 py-0.5 rounded-full">목표 2 ✅</span>
+          <span class="text-lg">☁️</span>
+        </div>
+        <div class="absolute left-0 right-0 top-52 flex items-center px-4">
+          <div class="flex-1 border-t border-dashed border-sky-400/20"></div>
+          <span class="text-[10px] text-sky-500 mx-2 bg-sky-200/50 px-2 py-0.5 rounded-full">목표 1 ✅</span>
+          <span class="text-lg">☁️</span>
+        </div>
+
+        <!-- Balloon -->
+        <div class="absolute left-1/2 -translate-x-1/2" style="animation: balloon-float 4s ease-in-out infinite; bottom: 160px;">
+          <div class="flex flex-col items-center">
+            <div class="text-7xl drop-shadow-lg">🎈</div>
+            <div class="w-0.5 h-6 bg-amber-400"></div>
+            <div class="w-12 h-8 bg-gradient-to-b from-amber-600 to-amber-700 rounded-b-lg rounded-t border-2 border-amber-500 flex items-center justify-center overflow-hidden">
+              <img src="assets/puppy.png" alt="뭉치" class="w-7 h-7 object-contain -mt-1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Ground -->
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-green-300 to-green-200 rounded-t-[40px]">
+          <div class="flex justify-around pt-4 px-8">
+            <span class="text-xl">🌳</span>
+            <span class="text-lg">🌸</span>
+            <span class="text-xl">🌲</span>
+            <span class="text-lg">🌼</span>
+            <span class="text-xl">🌳</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Volume meter -->
+      <div class="bg-white/90 backdrop-blur mx-4 mb-2 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-2xl">🎤</span>
+          <div class="flex-1">
+            <div class="flex justify-between mb-1">
+              <span class="text-xs text-gray-500">"아~" 소리를 내봐!</span>
+              <span class="text-xs font-bold text-blue-500">2.3초</span>
+            </div>
+            <div class="h-3 bg-gray-100 rounded-full overflow-hidden flex">
+              <div class="h-full bg-gradient-to-r from-green-300 via-green-400 to-yellow-400 rounded-full transition-all" style="width: 65%; animation: gauge-fill 2s ease-in-out infinite;"></div>
+            </div>
+            <div class="flex justify-between mt-0.5">
+              <span class="text-[9px] text-gray-400">조용</span>
+              <span class="text-[9px] text-gray-400">적당</span>
+              <span class="text-[9px] text-gray-400">크게</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="bg-white/90 backdrop-blur mx-4 mb-4 rounded-2xl px-4 py-3 shadow-sm flex items-center justify-between">
+        <span class="text-sm text-gray-600">진행: ⭐⭐☆☆☆</span>
+        <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">2/5 성공</span>
+      </div>
+    </div>
+
+    <!-- 6. Result / Reward Screen -->
+    <div id="screen-result" class="screen bg-gradient-to-b from-yellow-100 via-amber-50 to-orange-50 relative">
+      <!-- Confetti -->
+      <div class="confetti-piece bg-red-400" style="left: 10%; animation-delay: 0s;"></div>
+      <div class="confetti-piece bg-blue-400" style="left: 25%; animation-delay: 0.3s;"></div>
+      <div class="confetti-piece bg-green-400" style="left: 40%; animation-delay: 0.1s;"></div>
+      <div class="confetti-piece bg-yellow-400" style="left: 55%; animation-delay: 0.5s;"></div>
+      <div class="confetti-piece bg-purple-400" style="left: 70%; animation-delay: 0.2s;"></div>
+      <div class="confetti-piece bg-pink-400" style="left: 85%; animation-delay: 0.4s;"></div>
+      <div class="confetti-piece bg-orange-400 w-2 h-6 rounded-sm" style="left: 15%; animation-delay: 0.6s;"></div>
+      <div class="confetti-piece bg-teal-400 w-2 h-6 rounded-sm" style="left: 50%; animation-delay: 0.8s;"></div>
+      <div class="confetti-piece bg-indigo-400 w-3 h-3 rounded-full" style="left: 80%; animation-delay: 0.7s;"></div>
+
+      <div class="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
+        <!-- Stars -->
+        <div class="flex gap-3 mb-4">
+          <span class="text-4xl" style="animation: star-pop 0.5s ease-out forwards;">🌟</span>
+          <span class="text-5xl" style="animation: star-pop 0.5s ease-out 0.2s forwards;">🌟</span>
+          <span class="text-4xl" style="animation: star-pop 0.5s ease-out 0.4s forwards;">🌟</span>
+        </div>
+
+        <!-- Character -->
+        <div class="mb-4 relative">
+          <div class="w-28 h-28 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full flex items-center justify-center shadow-lg" style="animation: clap 0.8s ease-in-out infinite;">
+            <span class="text-6xl">🥳</span>
+          </div>
+          <div class="absolute -top-2 -right-4 text-2xl sparkle">✨</div>
+          <div class="absolute -top-3 -left-3 text-xl sparkle" style="animation-delay: 0.5s;">✨</div>
+        </div>
+
+        <h2 class="text-2xl font-black text-gray-800 mb-1">정말 잘했어! 👏</h2>
+        <p class="text-gray-500 text-sm mb-5">오늘도 멋지게 해냈어!</p>
+
+        <!-- Stats card -->
+        <div class="w-full bg-white rounded-2xl p-5 shadow-lg mb-5" style="animation: slide-up 0.5s ease-out forwards;">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">오늘의 기록</p>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div class="text-3xl font-black text-green-500">4</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">성공 횟수</div>
+              <div class="text-[10px] text-gray-300">/ 5회</div>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-blue-500">3:20</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">소요 시간</div>
+              <div class="text-[10px] text-gray-300">분:초</div>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-amber-500">85%</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">최고 벌림</div>
+              <div class="text-[10px] text-green-400">↑ 5%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puppy reaction card -->
+        <div onclick="showScreen('puppy')" class="w-full bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 shadow-md mb-4 cursor-pointer border-2 border-amber-200 hover:shadow-lg transition-all" style="animation: slide-up 0.8s ease-out forwards;">
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 flex-shrink-0 relative">
+              <img src="assets/puppy.png" alt="뭉치" class="w-full h-full object-contain" style="animation: puppy-bounce 1s ease-in-out infinite;">
+              <div class="absolute -top-2 -right-1 text-xs" style="animation: heart-float 1.5s ease-out infinite;">💕</div>
+              <div class="absolute -top-1 -left-1 text-[10px]" style="animation: heart-float 1.5s ease-out 0.5s infinite;">❤️</div>
+            </div>
+            <div class="flex-1">
+              <p class="font-bold text-sm text-gray-800">뭉치가 기뻐하고 있어! 🎉</p>
+              <p class="text-xs text-amber-600 mt-0.5">⭐ +4 획득! (18 → 22)</p>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <div class="flex-1 h-2 bg-amber-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all" style="width: 73%;"></div>
+                </div>
+                <span class="text-[10px] text-amber-600 font-medium">22/30</span>
+              </div>
+              <p class="text-[10px] text-amber-500 mt-0.5">친구 멍멍까지 별 8개 남았어!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="w-full flex gap-3">
+          <button onclick="showScreen('game1')" class="flex-1 bg-gradient-to-r from-green-400 to-green-500 text-white font-bold py-4 rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-95 text-base">
+            🔄 한번 더!
+          </button>
+          <button onclick="showScreen('home')" class="flex-1 bg-white text-gray-600 font-bold py-4 rounded-2xl shadow-md border-2 border-gray-200 hover:shadow-lg transition-all active:scale-95 text-base">
+            🏠 홈으로
+          </button>
+        </div>
+      </div>
+      <div class="h-6"></div>
+    </div>
+
+    <!-- 7. Puppy Growth Screen -->
+    <div id="screen-puppy" class="screen bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-amber-400 to-yellow-400 px-5 pt-5 pb-4 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-300/30 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+        <div class="flex items-center gap-2 mb-2 relative z-10">
+          <button onclick="showScreen('home')" class="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center text-white text-sm">←</button>
+          <div class="flex-1"></div>
+          <span class="text-xs bg-white/30 text-white px-2.5 py-1 rounded-full font-medium">⭐ 18개</span>
+        </div>
+        <h2 class="text-lg font-bold text-white relative z-10">내 강아지 🐾</h2>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <!-- Main Puppy Display -->
+        <div class="bg-white rounded-3xl p-6 shadow-lg text-center relative overflow-hidden">
+          <div class="absolute top-2 right-2 text-xs" style="animation: heart-float 2s ease-out infinite;">💕</div>
+          <div class="absolute top-8 left-4 text-xs" style="animation: heart-float 2.5s ease-out 1s infinite;">💛</div>
+
+          <!-- Puppy Image - Stage 3: 꼬마 멍멍 -->
+          <div class="mx-auto w-48 h-48 mb-4 relative">
+            <img src="assets/puppy.png" alt="뭉치" class="w-full h-full object-contain drop-shadow-lg" style="animation: puppy-bounce 2s ease-in-out infinite;">
+            <!-- Sparkles -->
+            <div class="absolute top-0 right-2 text-lg sparkle">✨</div>
+            <div class="absolute top-6 left-0 text-sm sparkle" style="animation-delay: 0.7s;">✨</div>
+            <div class="absolute bottom-8 right-0 text-xs" style="animation: heart-float 2s ease-out infinite;">💕</div>
+            <div class="absolute top-2 left-6 text-xs" style="animation: heart-float 2.5s ease-out 0.8s infinite;">💛</div>
+          </div>
+
+          <h3 class="text-2xl font-black text-gray-800 mb-0.5">뭉치</h3>
+          <div class="inline-block bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 text-sm font-bold px-4 py-1 rounded-full mb-3">
+            Lv.3 꼬마 멍멍 🎀
+          </div>
+          <p class="text-gray-500 text-xs mb-3">뭉치가 리본을 달고 신나게 뛰어놀아요!</p>
+
+          <!-- Speech bubble from puppy -->
+          <div class="bg-amber-50 rounded-2xl px-4 py-2.5 border border-amber-200 inline-block relative">
+            <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-50 border-l border-t border-amber-200 rotate-45"></div>
+            <p class="text-sm text-amber-700 font-medium">"오늘도 같이 놀자! 멍멍!" 🐶</p>
+          </div>
+        </div>
+
+        <!-- Growth Progress -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-bold text-gray-400 mb-3">🌱 성장 과정</p>
+
+          <!-- Growth stages timeline -->
+          <div class="flex items-center justify-between mb-4 px-2">
+            <!-- Stage 1: Egg (completed) -->
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center border-2 border-green-400 mb-1">
+                <span class="text-lg">🥚</span>
+              </div>
+              <span class="text-[9px] text-green-600 font-bold">알</span>
+              <span class="text-[8px] text-gray-400">0⭐</span>
+            </div>
+            <div class="flex-1 h-1 bg-green-400 mx-1 rounded-full"></div>
+            <!-- Stage 2: Baby (completed) -->
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center border-2 border-green-400 mb-1">
+                <svg viewBox="0 0 40 40" class="w-6 h-6">
+                  <circle cx="20" cy="20" r="12" fill="#FBBF24"/>
+                  <circle cx="16" cy="18" r="2" fill="#1F2937"/>
+                  <circle cx="24" cy="18" r="2" fill="#1F2937"/>
+                  <ellipse cx="20" cy="23" rx="2" ry="1.5" fill="#92400E"/>
+                </svg>
+              </div>
+              <span class="text-[9px] text-green-600 font-bold">아기</span>
+              <span class="text-[8px] text-gray-400">5⭐</span>
+            </div>
+            <div class="flex-1 h-1 bg-green-400 mx-1 rounded-full"></div>
+            <!-- Stage 3: Small (current!) -->
+            <div class="flex flex-col items-center relative">
+              <div class="absolute -top-2 text-[8px] bg-amber-400 text-white px-1.5 py-0.5 rounded-full font-bold">NOW</div>
+              <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center border-3 border-amber-400 mb-1 shadow-md" style="animation: grow-pulse 2s ease-in-out infinite;">
+                <svg viewBox="0 0 40 40" class="w-7 h-7">
+                  <circle cx="20" cy="22" r="12" fill="#FBBF24"/>
+                  <circle cx="20" cy="16" r="10" fill="#FCD34D"/>
+                  <ellipse cx="13" cy="12" rx="4" ry="7" fill="#D97706" transform="rotate(-10 13 12)"/>
+                  <ellipse cx="27" cy="12" rx="4" ry="7" fill="#D97706" transform="rotate(10 27 12)"/>
+                  <circle cx="16" cy="15" r="2.5" fill="#1F2937"/>
+                  <circle cx="24" cy="15" r="2.5" fill="#1F2937"/>
+                  <circle cx="17" cy="14" r="1" fill="white"/>
+                  <circle cx="25" cy="14" r="1" fill="white"/>
+                  <ellipse cx="20" cy="19" rx="2" ry="1.5" fill="#92400E"/>
+                  <path d="M17 21 Q20 24 23 21" fill="#92400E"/>
+                  <circle cx="15" cy="9" r="3" fill="#F472B6"/>
+                </svg>
+              </div>
+              <span class="text-[9px] text-amber-600 font-bold">꼬마</span>
+              <span class="text-[8px] text-amber-500">15⭐</span>
+            </div>
+            <div class="flex-1 h-1 bg-gray-200 mx-1 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-amber-400 to-amber-200 rounded-full" style="width: 25%;"></div>
+            </div>
+            <!-- Stage 4: Friend (locked) -->
+            <div class="flex flex-col items-center opacity-50">
+              <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border-2 border-gray-300 mb-1">
+                <svg viewBox="0 0 40 40" class="w-6 h-6 opacity-40">
+                  <circle cx="20" cy="22" r="12" fill="#D1D5DB"/>
+                  <circle cx="20" cy="16" r="10" fill="#E5E7EB"/>
+                  <circle cx="16" cy="15" r="2" fill="#9CA3AF"/>
+                  <circle cx="24" cy="15" r="2" fill="#9CA3AF"/>
+                  <text x="17" y="29" font-size="8" fill="#9CA3AF">👑</text>
+                </svg>
+              </div>
+              <span class="text-[9px] text-gray-400 font-bold">친구</span>
+              <span class="text-[8px] text-gray-400">30⭐</span>
+            </div>
+            <div class="flex-1 h-1 bg-gray-200 mx-1 rounded-full"></div>
+            <!-- Stage 5: Hero (locked) -->
+            <div class="flex flex-col items-center opacity-40">
+              <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border-2 border-gray-200 mb-1">
+                <span class="text-lg opacity-40">🦸</span>
+              </div>
+              <span class="text-[9px] text-gray-400 font-bold">영웅</span>
+              <span class="text-[8px] text-gray-400">50⭐</span>
+            </div>
+          </div>
+
+          <!-- Current progress bar -->
+          <div class="bg-amber-50 rounded-xl p-3">
+            <div class="flex justify-between mb-1">
+              <span class="text-[11px] text-amber-700 font-medium">Lv.3 → Lv.4 진행률</span>
+              <span class="text-[11px] text-amber-600 font-bold">18 / 30 ⭐</span>
+            </div>
+            <div class="h-3 bg-amber-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full relative" style="width: 60%;">
+                <div class="absolute inset-0 rounded-full" style="background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 2s ease-in-out infinite;"></div>
+              </div>
+            </div>
+            <p class="text-center text-[10px] text-amber-500 mt-1.5">별 12개 더 모으면 <strong>👑 친구 멍멍</strong>이 돼요!</p>
+          </div>
+        </div>
+
+        <!-- What puppy learned -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-bold text-gray-400 mb-3">🏆 뭉치가 배운 것</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-green-50 rounded-xl p-2.5 text-center border border-green-200">
+              <div class="text-2xl mb-1">👄</div>
+              <p class="text-[10px] font-bold text-gray-700">입 벌리기</p>
+              <p class="text-[9px] text-green-600">마스터!</p>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-2.5 text-center border border-blue-200">
+              <div class="text-2xl mb-1">🎈</div>
+              <p class="text-[10px] font-bold text-gray-700">소리내기</p>
+              <p class="text-[9px] text-blue-600">연습 중</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-2.5 text-center border border-gray-200 opacity-50">
+              <div class="text-2xl mb-1">🔒</div>
+              <p class="text-[10px] font-bold text-gray-400">따라 말하기</p>
+              <p class="text-[9px] text-gray-400">곧 열려요</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puppy diary / recent -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-bold text-gray-400 mb-3">📖 뭉치 일기</p>
+          <div class="space-y-2.5">
+            <div class="flex items-start gap-2.5">
+              <div class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="text-xs">🐾</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-700"><strong>오늘</strong> — 입 벌리기 4번 성공! ⭐×4</p>
+                <p class="text-[10px] text-gray-400">"뭉치가 꼬리를 세차게 흔들었어요!"</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <div class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="text-xs">🐾</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-700"><strong>어제</strong> — 소리 열기구 2번 성공! ⭐×2</p>
+                <p class="text-[10px] text-gray-400">"뭉치가 하늘을 보며 멍멍 짖었어요!"</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="text-xs">🎉</span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-700"><strong>3일 전</strong> — Lv.3 꼬마 멍멍으로 성장!</p>
+                <p class="text-[10px] text-gray-400">"뭉치가 예쁜 리본을 달았어요!"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button onclick="showScreen('home')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-400 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-base">
+          🎮 게임하고 뭉치 키우기!
+        </button>
+
+        <div class="h-4"></div>
+      </div>
+    </div>
+
+    <!-- 8. Parent Dashboard -->
+    <div id="screen-dashboard" class="screen bg-gray-50">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-5 pt-5 pb-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-blue-400/30 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+        <div class="flex items-center gap-2 mb-3 relative z-10">
+          <button onclick="showScreen('home')" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white text-sm">←</button>
+          <div class="flex-1"></div>
+          <button class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white text-sm">⚙</button>
+        </div>
+        <div class="flex items-center gap-3 relative z-10">
+          <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+            <span class="text-2xl">🐥</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white">민준이의 기록</h2>
+            <p class="text-blue-100 text-xs">3일 연속 참여 중 🔥</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 -mt-4 pb-4 space-y-3 overflow-y-auto" style="max-height: 640px;">
+        <!-- Weekly Calendar -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-bold text-gray-400 mb-3">📅 이번 주 활동</p>
+          <div class="grid grid-cols-7 gap-1 text-center">
+            <span class="text-[10px] text-gray-400">월</span>
+            <span class="text-[10px] text-gray-400">화</span>
+            <span class="text-[10px] text-gray-400">수</span>
+            <span class="text-[10px] text-gray-400">목</span>
+            <span class="text-[10px] text-gray-400">금</span>
+            <span class="text-[10px] text-gray-400">토</span>
+            <span class="text-[10px] text-gray-400">일</span>
+            <div class="w-8 h-8 mx-auto bg-green-100 rounded-full flex items-center justify-center"><span class="text-sm">✅</span></div>
+            <div class="w-8 h-8 mx-auto bg-green-100 rounded-full flex items-center justify-center"><span class="text-sm">✅</span></div>
+            <div class="w-8 h-8 mx-auto bg-green-100 rounded-full flex items-center justify-center border-2 border-green-400"><span class="text-sm">✅</span></div>
+            <div class="w-8 h-8 mx-auto bg-gray-100 rounded-full flex items-center justify-center"><span class="text-xs text-gray-300">—</span></div>
+            <div class="w-8 h-8 mx-auto bg-gray-100 rounded-full flex items-center justify-center"><span class="text-xs text-gray-300">—</span></div>
+            <div class="w-8 h-8 mx-auto bg-gray-100 rounded-full flex items-center justify-center"><span class="text-xs text-gray-300">—</span></div>
+            <div class="w-8 h-8 mx-auto bg-gray-100 rounded-full flex items-center justify-center"><span class="text-xs text-gray-300">—</span></div>
+          </div>
+        </div>
+
+        <!-- Voice Duration Chart -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-bold text-gray-400">📈 발성 지속시간 변화</p>
+            <span class="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-medium">+60% 향상</span>
+          </div>
+          <svg viewBox="0 0 280 100" class="w-full">
+            <!-- Grid -->
+            <line x1="30" y1="10" x2="270" y2="10" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="30" y1="30" x2="270" y2="30" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="30" y1="50" x2="270" y2="50" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="30" y1="70" x2="270" y2="70" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="30" y1="90" x2="270" y2="90" stroke="#f3f4f6" stroke-width="1"/>
+            <!-- Labels -->
+            <text x="5" y="14" font-size="8" fill="#9ca3af">5초</text>
+            <text x="5" y="34" font-size="8" fill="#9ca3af">4초</text>
+            <text x="5" y="54" font-size="8" fill="#9ca3af">3초</text>
+            <text x="5" y="74" font-size="8" fill="#9ca3af">2초</text>
+            <text x="5" y="94" font-size="8" fill="#9ca3af">1초</text>
+            <text x="70" y="100" font-size="8" fill="#9ca3af">1주</text>
+            <text x="130" y="100" font-size="8" fill="#9ca3af">2주</text>
+            <text x="190" y="100" font-size="8" fill="#9ca3af">3주</text>
+            <text x="250" y="100" font-size="8" fill="#9ca3af">4주</text>
+            <!-- Line chart -->
+            <polyline points="70,80 130,60 190,40 250,25" fill="none" stroke="#22C55E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="300" style="animation: graph-draw 2s ease-out forwards;"/>
+            <!-- Dots -->
+            <circle cx="70" cy="80" r="4" fill="#22C55E"/>
+            <circle cx="130" cy="60" r="4" fill="#22C55E"/>
+            <circle cx="190" cy="40" r="4" fill="#22C55E"/>
+            <circle cx="250" cy="25" r="5" fill="#22C55E" stroke="white" stroke-width="2"/>
+            <!-- Current value -->
+            <rect x="232" y="10" width="36" height="14" rx="4" fill="#22C55E"/>
+            <text x="250" y="20" font-size="8" fill="white" text-anchor="middle" font-weight="bold">4.2초</text>
+          </svg>
+        </div>
+
+        <!-- Weekly Goals -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs font-bold text-gray-400 mb-3">🎯 이번 주 목표</p>
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-5 h-5 bg-green-100 rounded flex items-center justify-center"><span class="text-xs text-green-600">✓</span></div>
+              <span class="text-sm text-gray-700 line-through">소리 열기구 3초 유지</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <div class="w-5 h-5 bg-blue-100 rounded flex items-center justify-center">
+                <div class="w-2.5 h-2.5 border-2 border-blue-400 rounded-sm"></div>
+              </div>
+              <span class="text-sm text-gray-700">입 벌리기 5회 세션 완료</span>
+              <span class="text-[10px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded ml-auto">3/5</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <div class="w-5 h-5 bg-blue-100 rounded flex items-center justify-center">
+                <div class="w-2.5 h-2.5 border-2 border-blue-400 rounded-sm"></div>
+              </div>
+              <span class="text-sm text-gray-700">따라 말하기 "사과" 성공</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Home Training Tip -->
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200">
+          <p class="text-xs font-bold text-amber-600 mb-2">💡 오늘의 가정 훈련 팁</p>
+          <p class="text-sm text-gray-700 leading-relaxed">
+            식사 시간에 "아~" 하고 입 벌려 보기를 함께 해보세요.
+            거울 앞에서 하면 더 효과적이에요!
+            <strong>하루 3회, 5분씩</strong>이면 충분합니다.
+          </p>
+          <p class="text-[10px] text-gray-400 mt-2">🟠 정소리 치료사 추천</p>
+        </div>
+
+        <!-- Bottom spacing -->
+        <div class="h-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Credit -->
+  <div class="mt-6 text-center text-gray-500 text-xs">
+    <div class="flex items-center justify-center gap-4 mb-2">
+      <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block"></span> 박건축</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 bg-purple-500 rounded-full inline-block"></span> 이하늘</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 bg-green-500 rounded-full inline-block"></span> 김코드</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 bg-orange-500 rounded-full inline-block"></span> 정소리</span>
+    </div>
+    <p>Speech-Therapy Agent Team — UI Prototype v0.2 (🐾 강아지 성장 시스템 추가)</p>
+  </div>
+
+  <script>
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.remove('active-nav');
+        b.classList.add('bg-gray-700', 'text-gray-300');
+      });
+      event.target.classList.add('active-nav');
+      event.target.classList.remove('bg-gray-700', 'text-gray-300');
+    }
+  </script>
+</body>
+</html>
