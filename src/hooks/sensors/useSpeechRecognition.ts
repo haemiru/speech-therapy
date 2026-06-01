@@ -62,22 +62,33 @@ export function useSpeechRecognition() {
     recognition.lang = 'ko-KR';
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    // ASR이 정답을 2·3순위 후보로 두는 경우가 많아 여러 후보를 받아 가장 유사한 것을 채택
+    recognition.maxAlternatives = 5;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const lastResult = event.results[event.results.length - 1];
-      const transcriptText = lastResult[0].transcript.trim();
-      const confidence = lastResult[0].confidence;
       const isFinal = lastResult.isFinal;
+      const target = targetWordRef.current;
 
-      setTranscript(transcriptText);
+      // 모든 후보 중 목표 단어와 가장 유사한 것을 선택
+      let bestText = lastResult[0].transcript.trim();
+      let bestSim = jamoSimilarity(target, bestText);
+      for (let i = 1; i < lastResult.length; i++) {
+        const altText = lastResult[i].transcript.trim();
+        const altSim = jamoSimilarity(target, altText);
+        if (altSim > bestSim) {
+          bestSim = altSim;
+          bestText = altText;
+        }
+      }
 
-      const similarity = jamoSimilarity(targetWordRef.current, transcriptText);
+      const confidence = lastResult[0].confidence;
+      setTranscript(bestText);
 
       onResultRef.current?.({
-        transcript: transcriptText,
+        transcript: bestText,
         confidence,
-        similarity,
+        similarity: bestSim,
         isFinal,
       });
     };
@@ -96,9 +107,15 @@ export function useSpeechRecognition() {
 
     recognition.onend = () => {
       setIsListening(false);
-      // 라운드 진행 중이면 재시도 필요 표시 (사용자 제스처로 재시작)
+      // 라운드 진행 중이면 자동 재시작 (continuous 효과: 아이가 말할 때까지 계속 듣기)
       if (shouldRestartRef.current) {
-        setNeedsRetry(true);
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch {
+          // 자동 재시작 실패 시에만 수동 버튼 노출
+          setNeedsRetry(true);
+        }
       }
     };
 

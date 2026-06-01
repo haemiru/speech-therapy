@@ -146,10 +146,17 @@ export default function FollowSpeechPlayPage() {
 
     setPhase('playing');
 
-    // 동기적으로 TTS + 인식 + 타이머 모두 시작 (사용자 제스처 컨텍스트 유지)
-    tts.speak(prompt.text).catch(() => {});
-    speechRecognition.startListening(prompt.text, handleRecognitionResult);
-    timer.start();
+    // 먼저 또박또박 들려주고, TTS가 끝난 뒤에 마이크·타이머 시작
+    // (마이크가 TTS 소리를 듣고 일찍 종료되는 문제 방지 + 아이에게 온전한 발화 시간 제공)
+    tts
+      .speak(prompt.text)
+      .catch(() => {})
+      .finally(() => {
+        // 그 사이 일시정지/이탈했으면 중단
+        if (phaseRef.current !== 'playing') return;
+        speechRecognition.startListening(prompt.text, handleRecognitionResult);
+        timer.start();
+      });
   }, [prompts, currentRound, tts, speechRecognition, judgment, timer, handleRecognitionResult]);
 
   // Wire up the success ref
