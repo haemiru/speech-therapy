@@ -61,6 +61,14 @@ export default function FollowSpeechPlayPage() {
   const phaseRef = useRef<GamePhase>('ready');
   phaseRef.current = phase;
 
+  // 진단 패널 표시 여부 (URL에 ?debug=1)
+  const [debug, setDebug] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDebug(new URLSearchParams(window.location.search).get('debug') === '1');
+    }
+  }, []);
+
   // Sensors & judgment
   const speechRecognition = useSpeechRecognition();
   const tts = useTTS();
@@ -357,6 +365,17 @@ export default function FollowSpeechPlayPage() {
                 <span className="text-xl">🎤</span>
                 다시 말하기
               </button>
+            )}
+
+            {/* 진단 패널 (?debug=1 일 때만) */}
+            {debug && (
+              <div className="mt-2 mx-auto text-[11px] leading-relaxed text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 font-mono">
+                <div>listening: {String(speechRecognition.isListening)}</div>
+                <div>results: {speechRecognition.resultCount}</div>
+                <div>transcript: &quot;{currentTranscript || '—'}&quot;</div>
+                <div>similarity: {(currentSimilarity * 100).toFixed(0)}% / 기준 {(threshold * 100).toFixed(0)}%</div>
+                <div>error: {speechRecognition.lastErrorCode ?? '—'}</div>
+              </div>
             )}
           </>
         )}
