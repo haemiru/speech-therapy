@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BackButton } from '@/components/ui/BackButton';
 import { useHistoryStore } from '@/stores/useHistoryStore';
 import { useProfileStore } from '@/stores/useProfileStore';
+import { useReportStore } from '@/stores/useReportStore';
 import { GAMES } from '@/constants/games';
-import type { ReportData, ReportResponse } from '@/types/report';
+import type { ReportResponse } from '@/types/report';
 
 type PageState = 'idle' | 'loading' | 'done' | 'error';
 
@@ -22,9 +23,10 @@ function getGameIcon(gameId: string): string {
 export default function ReportPage() {
   const { records } = useHistoryStore();
   const { child, settings } = useProfileStore();
+  const { report, setReport, clearReport } = useReportStore();
 
-  const [state, setState] = useState<PageState>('idle');
-  const [report, setReport] = useState<ReportData | null>(null);
+  // 저장된 보고서가 있으면 결과 화면으로 시작
+  const [state, setState] = useState<PageState>(report ? 'done' : 'idle');
   const [error, setError] = useState('');
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
 
@@ -261,7 +263,7 @@ export default function ReportPage() {
             <button
               onClick={() => {
                 setState('idle');
-                setReport(null);
+                clearReport();
               }}
               className="px-6 py-3 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-700 font-bold rounded-2xl transition-colors"
             >

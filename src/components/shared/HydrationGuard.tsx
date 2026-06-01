@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePuppyStore } from '@/stores/usePuppyStore';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { useHistoryStore } from '@/stores/useHistoryStore';
+import { useReportStore } from '@/stores/useReportStore';
 
 /**
  * Zustand persist stores의 SSR hydration을 처리.
@@ -16,6 +17,7 @@ export function HydrationGuard({ children }: { children: React.ReactNode }) {
     usePuppyStore.persist.rehydrate();
     useProfileStore.persist.rehydrate();
     useHistoryStore.persist.rehydrate();
+    useReportStore.persist.rehydrate();
     setHydrated(true);
   }, []);
 
