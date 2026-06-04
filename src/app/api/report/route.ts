@@ -36,13 +36,15 @@ function aggregateByGame(records: SessionRecord[]): GameStats[] {
   for (const [gameId, recs] of gameGroups) {
     const sorted = [...recs].sort((a, b) => a.timestamp - b.timestamp);
     const totalSessions = sorted.length;
+    // totalRounds가 0인 비정상 기록이 섞여도 NaN이 보고서 전체로 번지지 않도록 방어
+    const rate = (r: SessionRecord) =>
+      r.result.totalRounds > 0 ? r.result.successCount / r.result.totalRounds : 0;
     const avgSuccessRate =
-      sorted.reduce((sum, r) => sum + r.result.successCount / r.result.totalRounds, 0) /
-      totalSessions;
+      sorted.reduce((sum, r) => sum + rate(r), 0) / totalSessions;
     const avgStars =
       sorted.reduce((sum, r) => sum + r.result.starsEarned, 0) / totalSessions;
     const maxPeakValue = Math.max(...sorted.map((r) => r.result.peakValue));
-    const recent = sorted.slice(-5).map((r) => r.result.successCount / r.result.totalRounds);
+    const recent = sorted.slice(-5).map((r) => rate(r));
 
     stats.push({
       gameId: gameId as GameId,
@@ -158,11 +160,17 @@ export async function POST(request: Request) {
   try {
     const body: ReportRequest = await request.json();
 
-    if (!body.records || body.records.length === 0) {
+    if (!Array.isArray(body.records) || body.records.length === 0) {
       return NextResponse.json(
         { success: false, error: '분석할 기록이 없습니다.' },
         { status: 400 }
       );
+    }
+
+    // 과도한 payload로 인한 비용·지연 방지 (분석은 최근 기록만으로 충분)
+    const MAX_RECORDS = 500;
+    if (body.records.length > MAX_RECORDS) {
+      body.records = body.records.slice(-MAX_RECORDS);
     }
 
     const prompt = buildPrompt(body);
@@ -206,10 +214,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, report });
   } catch (err: unknown) {
+    // 상세 오류는 서버 로그에만 남기고, 클라이언트에는 일반 메시지만 전달
+    // (Gemini 내부 오류 본문 등이 사용자에게 노출되지 않도록)
     const message = err instanceof Error ? err.message : '알 수 없는 오류';
     console.error('Report generation error:', message);
     return NextResponse.json(
-      { success: false, error: `보고서 생성 중 오류: ${message}` },
+      { success: false, error: '보고서 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
       { status: 500 }
     );
   }
