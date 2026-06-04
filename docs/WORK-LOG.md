@@ -3,11 +3,12 @@
 > **이 문서는 무엇인가요?**
 > "소리야 놀자(Speech-Therapy)" 프로젝트의 작업 기록입니다.
 > - **5/30~31 세션**: 프로젝트 복구·배포 (§1~§6)
-> - **6/1 세션**: 보고서 영속화 · git 리모트 정리 · 따라말하기 개선 (§7) ⬅️ 최신
+> - **6/1 세션**: 보고서 영속화 · git 리모트 정리 · 따라말하기 개선 (§7~§9)
+> - **6/4 세션**: 앱 상태 점검 + 안정성 개선 5건 · 줄다리기 리소스 정리 (§10~§11) ⬅️ 최신
 > 다음에 돌아와서 "지금까지 뭐 했지?"가 궁금하면 이 문서를 먼저 보면 됩니다.
-> **돌아오면 §7 → §8(다음 할 일) 순서로 보면 됩니다.**
+> **돌아오면 §10 → §11(다음 할 일) 순서로 보면 됩니다.**
 
-**최종 업데이트:** 2026-06-01
+**최종 업데이트:** 2026-06-04
 
 ---
 
@@ -227,3 +228,72 @@ git push         # main에 반영 → Vercel 자동 배포
 
 ### ⭐ 배포 한 줄 요약
 모노레포 루트에서 `git push SpeechTherapy master:main` → Vercel(`speech-therapy-nine.vercel.app`) 자동 배포. (Root Directory=`Speech-Therapy`, 환경변수 `GEMINI_API_KEY`)
+
+---
+
+# 📌 2026-06-04 세션 (§10~§11)
+
+## 10. 6/4 세션에 한 작업
+
+"앱 상태 분석 + 추가 개선점 점검" 요청으로 시작. 빌드/타입/lint·핵심 훅·API 라우트를 직접 검증하고, 자동 점검 결과의 **거짓 양성과 실제 문제를 구분**한 뒤 실제 가치 있는 항목만 수정.
+
+### 10-0. 점검 결과 — 거짓 양성으로 판명된 것 (다시 의심하지 말 것)
+- **"API 키가 repo에 커밋됨"** → ❌ 사실 아님. `.env.local`은 git 추적 대상 아님(`git ls-files`에 없음), `.gitignore`에 `.env*.local`로 정상 제외. 키 안전.
+- **"FaceLandmarker 초기화 race"** → ❌ `landmarkerRef`/`initializingRef` 가드로 정상 동작.
+- **"마이크 AudioContext 누수"** → ❌ `useMicrophoneVolume`의 unmount cleanup에서 stream·context 모두 정리됨.
+
+### 10-1. 안정성 개선 5건 (커밋 4개)
+| # | 내용 | 파일 | 커밋 |
+|---|------|------|------|
+| 1 | **강아지 별점 음수 가드** — 임상 원칙(퇴행 금지)을 `addStars`에 `Math.max(0,...)`로 코드 강제 | `stores/usePuppyStore.ts` | `646e70d0` |
+| 2 | **보고서 API 견고성** — `totalRounds=0` NaN 방지 + records 500개 제한 + 클라이언트 에러 메시지 일반화(Gemini 내부 에러 본문 비노출) | `app/api/report/route.ts` | `c8acbaf6` |
+| 3 | **따라말하기 타이머 정리 + TTS 미지원 안내** — 라운드 전환 타이머를 `timersRef`에 모아 unmount 시 일괄 정리. TTS만 안 되는 브라우저용 안내 문구 추가 | `follow-speech/play/page.tsx` | `bf2db308` |
+| 4 | **나머지 3개 게임 타이머 정리** — 입·혀·소리열기구도 #3과 동일 패턴(카운트다운·라운드 전환·휴식·결과 이동 타이머) unmount 정리 | `mouth-opening`·`sound-balloon`·`tongue-exercises`/play/page.tsx | `fe378bd3` ⚠️**미푸시** |
+
+> **타이머 정리 패턴(향후 새 게임에도 적용):** 페이지에 `timersRef = useRef<Set<...>>(new Set())` + `track(id)` 헬퍼를 두고, 모든 `setTimeout`/`setInterval`을 `track(...)`으로 감싼 뒤 init useEffect cleanup에서 `timers.forEach(id => {clearTimeout(id); clearInterval(id);}); timers.clear();`로 일괄 정리. 자체 종료 시엔 `timersRef.current.delete(id)`.
+
+### 10-2. 줄다리기(tug-of-war) 외부 리소스 정리 (5/31부터 미결 항목 처리)
+사용자 확인: "줄다리기와 별개 프로젝트" → 정리 진행.
+- ✅ **로컬 리모트 제거** — 모노레포 `Claude-prj`에서 `git remote remove tug-of-war` 완료. 이제 리모트는 `SpeechTherapy` 하나만 남음(깨끗).
+- ✅ **Vercel** — 현재 로그인 계정(`junominus-projects`)에 프로젝트 0개 → 정리할 줄다리기 배포 없음(해당 없음). (Speech-Therapy 배포는 별도 계정 `junominu-3970`)
+- ⏳ **GitHub `haemiru/Tug-of-War` 영구 삭제** — 사용자가 "영구 삭제" 선택했으나, `gh` 토큰에 `delete_repo` 스코프가 없어 **미완료**. 진행하려면 ↓ §11 참고.
+
+---
+
+## 11. 다음에 할 일 (2026-06-04 기준) ⬅️ 돌아오면 여기부터
+
+### 🔴 바로 마무리할 것 (이번 세션 잔여)
+1. **게임 타이머 커밋 푸시** — `fe378bd3`가 로컬에만 있음. 모노레포 루트에서:
+   ```bash
+   git push SpeechTherapy master:main
+   ```
+   (원격 main은 현재 `bf2db308`. 위 명령으로 `fe378bd3`까지 배포됨)
+2. **GitHub Tug-of-War 저장소 영구 삭제** — 사용자가 영구 삭제로 결정함. `gh` 권한 부족 상태라 둘 중 하나:
+   - 권한 추가 후 CLI: `gh auth refresh -h github.com -s delete_repo` (브라우저 인증, 사용자 직접) → 그 다음 `gh repo delete haemiru/Tug-of-War --yes`
+   - 또는 웹: github.com/haemiru/Tug-of-War → Settings → Danger Zone → Delete this repository
+
+### 🟡 따라 말하기 — 단음절 안정화 (§8에서 이어짐, 선택)
+- 레벨1 단음절('가','바')은 ASR 인식 편차 큼. 더 안정화하려면 두 글자 의성어('바바')로 교체(`constants/wordBank.ts`)하거나 레벨1만 임계값 하향(`settings.followSpeechThreshold`, 현재 0.6).
+- 진단 패널(`?debug=1`) 코드는 쿼리 없으면 숨겨지므로 유지해도 무방.
+
+### 🟢 기타 (선택)
+- **게임 상수 추정치 실플레이 점검** — 풍선 하강률(`SOUND_BALLOON_DESCENT_RATE = 0.008`) 등 역산값이라 기기·브라우저별 난이도 편차 가능. 코드 버그는 아님.
+- **접근성(aria-label)** — 아동·터치 중심이라 우선순위 낮음.
+- `main-backup`의 미이식 작업(입운동 응원문구 등) 필요 시 cherry-pick.
+
+---
+
+## 12. 참고 정보 갱신 (6/4 기준)
+
+### 이번 세션 커밋 (로컬 `master`)
+| SHA | 내용 | 푸시 |
+|-----|------|------|
+| `646e70d0` | 강아지 별점 음수 가드 | ✅ |
+| `c8acbaf6` | 보고서 API 견고성 | ✅ |
+| `bf2db308` | 따라말하기 타이머 정리 + TTS 미지원 안내 (= 현재 원격 main HEAD) | ✅ |
+| `fe378bd3` | 입·혀·소리열기구 라운드 타이머 정리 | ⚠️ **미푸시** |
+
+### git 리모트 (모노레포 `Claude-prj`) — 6/4 갱신
+- `SpeechTherapy` → `haemiru/SpeechTherapy` — **배포용. `git push SpeechTherapy master:main`**
+- ~~`tug-of-war`~~ → 6/4에 로컬 리모트 제거 완료
+- ~~`origin`~~ → 6/1에 제거(othello 잘못 설정)
