@@ -66,6 +66,14 @@ export default function TongueExercisesPlayPage() {
   const peakValueRef = useRef(0);
   const startTimeRef = useRef<number>(0);
 
+  // 라운드 전환용 타이머/인터벌을 모아 unmount 시 일괄 정리
+  // (전환 중 홈으로 빠르게 나가면 unmount 후 setState/router 호출되는 문제 방지)
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const track = useCallback(<T extends ReturnType<typeof setTimeout>>(id: T): T => {
+    timersRef.current.add(id);
+    return id;
+  }, []);
+
   // Current round type
   const currentRoundType = roundTypes[currentRound - 1] ?? 'tongue-out';
 
@@ -96,9 +104,16 @@ export default function TongueExercisesPlayPage() {
     };
     setup();
 
+    const timers = timersRef.current;
     return () => {
       camera.stop();
       mouthMetrics.stopDetection();
+      // 보류 중인 라운드 전환 타이머/인터벌 모두 정리
+      timers.forEach((id) => {
+        clearTimeout(id);
+        clearInterval(id);
+      });
+      timers.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -147,20 +162,21 @@ export default function TongueExercisesPlayPage() {
     setCountdownValue(3);
     play('countdown');
 
-    const interval = setInterval(() => {
+    const interval = track(setInterval(() => {
       count--;
       if (count > 0) {
         setCountdownValue(count);
         play('countdown');
       } else {
         clearInterval(interval);
+        timersRef.current.delete(interval);
         setPhase('playing');
         peakValueRef.current = 0;
         judgment.reset();
         timer.start();
       }
-    }, 1000);
-  }, [play, judgment, timer]);
+    }, 1000));
+  }, [play, judgment, timer, track]);
 
   const handleRoundSuccess = useCallback(() => {
     timer.pause();
@@ -177,8 +193,8 @@ export default function TongueExercisesPlayPage() {
     };
     setRounds((prev) => [...prev, result]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, currentRoundType, holdDurationMs, timer, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, currentRoundType, holdDurationMs, timer, play, track]);
 
   const handleRoundTimeUp = useCallback(() => {
     play('fail');
@@ -194,8 +210,8 @@ export default function TongueExercisesPlayPage() {
     };
     setRounds((prev) => [...prev, result]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, currentRoundType, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, currentRoundType, play, track]);
 
   const proceedToNextRound = useCallback(() => {
     if (currentRound >= totalRounds) {
@@ -206,11 +222,12 @@ export default function TongueExercisesPlayPage() {
       let restTime = TONGUE_REST_BETWEEN_ROUNDS_SEC;
       setRestCountdown(restTime);
 
-      const restInterval = setInterval(() => {
+      const restInterval = track(setInterval(() => {
         restTime--;
         setRestCountdown(restTime);
         if (restTime <= 0) {
           clearInterval(restInterval);
+          timersRef.current.delete(restInterval);
           setCurrentRound((r) => r + 1);
           peakValueRef.current = 0;
           judgment.reset();
@@ -218,9 +235,9 @@ export default function TongueExercisesPlayPage() {
           setPhase('playing');
           timer.start();
         }
-      }, 1000);
+      }, 1000));
     }
-  }, [currentRound, totalRounds, judgment, timer]);
+  }, [currentRound, totalRounds, judgment, timer, track]);
 
   const finishGame = useCallback(() => {
     setPhase('finished');
@@ -256,11 +273,11 @@ export default function TongueExercisesPlayPage() {
     playFanfare();
 
     // Navigate to result after short delay
-    setTimeout(() => {
+    track(setTimeout(() => {
       sessionStorage.setItem('lastGameResult', JSON.stringify(gameResult));
       router.push('/result');
-    }, 1000);
-  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, mouthMetrics, camera]);
+    }, 1000));
+  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, mouthMetrics, camera, track]);
 
   const handlePause = useCallback(() => {
     setPhase('paused');

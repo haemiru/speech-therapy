@@ -61,6 +61,14 @@ export default function SoundBalloonPlayPage() {
   const startTimeRef = useRef<number>(0);
   const balloonHeightRef = useRef(0);
 
+  // 라운드 전환용 타이머/인터벌을 모아 unmount 시 일괄 정리
+  // (전환 중 홈으로 빠르게 나가면 unmount 후 setState/router 호출되는 문제 방지)
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const track = useCallback(<T extends ReturnType<typeof setTimeout>>(id: T): T => {
+    timersRef.current.add(id);
+    return id;
+  }, []);
+
   // Microphone
   const mic = useMicrophoneVolume();
 
@@ -81,8 +89,15 @@ export default function SoundBalloonPlayPage() {
   useEffect(() => {
     mic.init();
 
+    const timers = timersRef.current;
     return () => {
       mic.stopDetection();
+      // 보류 중인 라운드 전환 타이머/인터벌 모두 정리
+      timers.forEach((id) => {
+        clearTimeout(id);
+        clearInterval(id);
+      });
+      timers.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -147,13 +162,14 @@ export default function SoundBalloonPlayPage() {
     setCountdownValue(3);
     play('countdown');
 
-    const interval = setInterval(() => {
+    const interval = track(setInterval(() => {
       count--;
       if (count > 0) {
         setCountdownValue(count);
         play('countdown');
       } else {
         clearInterval(interval);
+        timersRef.current.delete(interval);
         setPhase('playing');
         peakValueRef.current = 0;
         balloonHeightRef.current = 0;
@@ -161,8 +177,8 @@ export default function SoundBalloonPlayPage() {
         judgment.reset();
         timer.start();
       }
-    }, 1000);
-  }, [play, judgment, timer]);
+    }, 1000));
+  }, [play, judgment, timer, track]);
 
   const handleRoundSuccess = useCallback(() => {
     timer.pause();
@@ -179,8 +195,8 @@ export default function SoundBalloonPlayPage() {
     };
     setRounds((prev) => [...prev, result]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, holdDurationMs, timer, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, holdDurationMs, timer, play, track]);
 
   const handleRoundTimeUp = useCallback(() => {
     play('fail');
@@ -196,8 +212,8 @@ export default function SoundBalloonPlayPage() {
     };
     setRounds((prev) => [...prev, result]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, play, track]);
 
   const proceedToNextRound = useCallback(() => {
     if (currentRound >= totalRounds) {
@@ -208,11 +224,12 @@ export default function SoundBalloonPlayPage() {
       let restTime = REST_BETWEEN_ROUNDS_SEC;
       setRestCountdown(restTime);
 
-      const restInterval = setInterval(() => {
+      const restInterval = track(setInterval(() => {
         restTime--;
         setRestCountdown(restTime);
         if (restTime <= 0) {
           clearInterval(restInterval);
+          timersRef.current.delete(restInterval);
           setCurrentRound((r) => r + 1);
           peakValueRef.current = 0;
           balloonHeightRef.current = 0;
@@ -222,9 +239,9 @@ export default function SoundBalloonPlayPage() {
           setPhase('playing');
           timer.start();
         }
-      }, 1000);
+      }, 1000));
     }
-  }, [currentRound, totalRounds, judgment, timer]);
+  }, [currentRound, totalRounds, judgment, timer, track]);
 
   const finishGame = useCallback(() => {
     setPhase('finished');
@@ -259,11 +276,11 @@ export default function SoundBalloonPlayPage() {
     playFanfare();
 
     // Navigate to result after short delay
-    setTimeout(() => {
+    track(setTimeout(() => {
       sessionStorage.setItem('lastGameResult', JSON.stringify(gameResult));
       router.push('/result');
-    }, 1000);
-  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, mic]);
+    }, 1000));
+  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, mic, track]);
 
   const handlePause = useCallback(() => {
     setPhase('paused');
