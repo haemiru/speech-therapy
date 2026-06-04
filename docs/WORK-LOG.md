@@ -4,9 +4,10 @@
 > "소리야 놀자(Speech-Therapy)" 프로젝트의 작업 기록입니다.
 > - **5/30~31 세션**: 프로젝트 복구·배포 (§1~§6)
 > - **6/1 세션**: 보고서 영속화 · git 리모트 정리 · 따라말하기 개선 (§7~§9)
-> - **6/4 세션**: 앱 상태 점검 + 안정성 개선 5건 · 줄다리기 리소스 정리 (§10~§11) ⬅️ 최신
+> - **6/4 세션**: 앱 상태 점검 + 안정성 개선 5건 · 줄다리기 리소스 정리 (§10~§11)
+> - **6/4 후속**: 게임 타이머 커밋 배포 푸시 완료 · Tug-of-War 저장소 영구 삭제 완료 (§11 잔여 전부 종료) ⬅️ 최신
 > 다음에 돌아와서 "지금까지 뭐 했지?"가 궁금하면 이 문서를 먼저 보면 됩니다.
-> **돌아오면 §10 → §11(다음 할 일) 순서로 보면 됩니다.**
+> **돌아오면 §11 맨 위 "🟢 돌아오면 곧바로 할 일"부터 보면 됩니다.**
 
 **최종 업데이트:** 2026-06-04
 
@@ -256,21 +257,24 @@ git push         # main에 반영 → Vercel 자동 배포
 사용자 확인: "줄다리기와 별개 프로젝트" → 정리 진행.
 - ✅ **로컬 리모트 제거** — 모노레포 `Claude-prj`에서 `git remote remove tug-of-war` 완료. 이제 리모트는 `SpeechTherapy` 하나만 남음(깨끗).
 - ✅ **Vercel** — 현재 로그인 계정(`junominus-projects`)에 프로젝트 0개 → 정리할 줄다리기 배포 없음(해당 없음). (Speech-Therapy 배포는 별도 계정 `junominu-3970`)
-- ⏳ **GitHub `haemiru/Tug-of-War` 영구 삭제** — 사용자가 "영구 삭제" 선택했으나, `gh` 토큰에 `delete_repo` 스코프가 없어 **미완료**. 진행하려면 ↓ §11 참고.
+- ✅ **GitHub `haemiru/Tug-of-War` 영구 삭제** — 6/4 후속으로 웹(Settings → Danger Zone)에서 삭제 완료. (`gh` 토큰에 `delete_repo` 스코프가 없어 CLI 대신 웹 사용.) 줄다리기 외부 리소스 정리 전부 종료.
 
 ---
 
 ## 11. 다음에 할 일 (2026-06-04 기준) ⬅️ 돌아오면 여기부터
 
-### 🔴 바로 마무리할 것 (이번 세션 잔여)
-1. **게임 타이머 커밋 푸시** — `fe378bd3`가 로컬에만 있음. 모노레포 루트에서:
-   ```bash
-   git push SpeechTherapy master:main
-   ```
-   (원격 main은 현재 `bf2db308`. 위 명령으로 `fe378bd3`까지 배포됨)
-2. **GitHub Tug-of-War 저장소 영구 삭제** — 사용자가 영구 삭제로 결정함. `gh` 권한 부족 상태라 둘 중 하나:
-   - 권한 추가 후 CLI: `gh auth refresh -h github.com -s delete_repo` (브라우저 인증, 사용자 직접) → 그 다음 `gh repo delete haemiru/Tug-of-War --yes`
-   - 또는 웹: github.com/haemiru/Tug-of-War → Settings → Danger Zone → Delete this repository
+### ✅ 6/4 잔여 — 모두 완료 (6/4 후속 세션에서 처리)
+1. ~~**게임 타이머 커밋 푸시**~~ — ✅ `git push SpeechTherapy master:main`으로 `bf2db308..580b1e0f` 푸시 완료. `fe378bd3`(게임 타이머) + WORK-LOG docs까지 원격 main 반영, Vercel 자동 배포 트리거됨.
+2. ~~**GitHub Tug-of-War 저장소 영구 삭제**~~ — ✅ 웹(Settings → Danger Zone)에서 삭제 완료.
+
+> **현재 🔴 긴급/필수 작업 없음.** 4종 게임 모두 동작·배포 정상, 줄다리기 정리 종료, 리모트는 `SpeechTherapy` 하나뿐(깨끗).
+
+### 🟢 돌아오면 곧바로 할 일 — 따라말하기 단음절 안정화 (1순위)
+사용자 체감이 가장 큰 미완 개선. ASR이 레벨1 단음절('가','나','바')을 인식할 때 편차가 커서 정확히 발음해도 가끔 떨어지는 문제. 둘 중 하나로 진행:
+1. **(권장) 레벨1 단어를 두 글자로 교체** — `src/constants/wordBank.ts`에서 레벨1 항목을 의성어('바바','가가') 또는 짧은 의미 단어로 바꾸면 ASR 안정성 ↑. 가장 효과 확실.
+2. **레벨1 임계값만 하향** — `settings.followSpeechThreshold`(현재 0.6)를 레벨1에 한해 낮춤. 코드 분기 필요.
+- 작업 후 라이브에서 실제로 발음해 통과율 확인 → 모노레포 루트에서 `git push SpeechTherapy master:main`로 배포.
+- 진단 패널(`follow-speech/play?debug=1`)로 `similarity`/`results` 보면서 튜닝하면 빠름.
 
 ### 🟡 따라 말하기 — 단음절 안정화 (§8에서 이어짐, 선택)
 - 레벨1 단음절('가','바')은 ASR 인식 편차 큼. 더 안정화하려면 두 글자 의성어('바바')로 교체(`constants/wordBank.ts`)하거나 레벨1만 임계값 하향(`settings.followSpeechThreshold`, 현재 0.6).
@@ -291,7 +295,11 @@ git push         # main에 반영 → Vercel 자동 배포
 | `646e70d0` | 강아지 별점 음수 가드 | ✅ |
 | `c8acbaf6` | 보고서 API 견고성 | ✅ |
 | `bf2db308` | 따라말하기 타이머 정리 + TTS 미지원 안내 (= 현재 원격 main HEAD) | ✅ |
-| `fe378bd3` | 입·혀·소리열기구 라운드 타이머 정리 | ⚠️ **미푸시** |
+| `fe378bd3` | 입·혀·소리열기구 라운드 타이머 정리 | ✅ (6/4 후속 푸시) |
+| `580b1e0f` | WORK-LOG 6/4 세션 기록 | ✅ (6/4 후속 푸시) |
+
+### 6/4 후속 — 원격 main HEAD
+- `SpeechTherapy/main` = `580b1e0f` 이후 이 WORK-LOG 갱신 커밋. 미푸시 커밋 없음.
 
 ### git 리모트 (모노레포 `Claude-prj`) — 6/4 갱신
 - `SpeechTherapy` → `haemiru/SpeechTherapy` — **배포용. `git push SpeechTherapy master:main`**
