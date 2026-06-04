@@ -61,6 +61,14 @@ export default function FollowSpeechPlayPage() {
   const phaseRef = useRef<GamePhase>('ready');
   phaseRef.current = phase;
 
+  // 라운드 전환용 타이머/인터벌을 모아 unmount 시 일괄 정리
+  // (전환 중 홈으로 빠르게 나가면 unmount 후 setState/router 호출되는 문제 방지)
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const track = useCallback(<T extends ReturnType<typeof setTimeout>>(id: T): T => {
+    timersRef.current.add(id);
+    return id;
+  }, []);
+
   // 진단 패널 표시 여부 (URL에 ?debug=1)
   const [debug, setDebug] = useState(false);
   useEffect(() => {
@@ -100,8 +108,15 @@ export default function FollowSpeechPlayPage() {
 
     // Auto-start countdown after brief delay
     const t = setTimeout(() => startCountdown(), 500);
+    const timers = timersRef.current;
     return () => {
       clearTimeout(t);
+      // 보류 중인 라운드 전환 타이머/인터벌 모두 정리
+      timers.forEach((id) => {
+        clearTimeout(id);
+        clearInterval(id);
+      });
+      timers.clear();
       speechRecognition.stopListening();
       tts.cancel();
     };
@@ -128,18 +143,19 @@ export default function FollowSpeechPlayPage() {
     setCountdownValue(3);
     play('countdown');
 
-    const interval = setInterval(() => {
+    const interval = track(setInterval(() => {
       count--;
       if (count > 0) {
         setCountdownValue(count);
         play('countdown');
       } else {
         clearInterval(interval);
+        timersRef.current.delete(interval);
         // 카운트다운 후 탭 대기 화면으로 전환
         setPhase('waiting');
       }
-    }, 1000);
-  }, [play]);
+    }, 1000));
+  }, [play, track]);
 
   // 사용자가 탭하면 TTS 재생 + 인식 시작 (사용자 제스처 컨텍스트 필요)
   const handleTapToStart = useCallback(() => {
@@ -184,8 +200,8 @@ export default function FollowSpeechPlayPage() {
     };
     setRounds((prev) => [...prev, roundResult]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, speechRecognition, timer, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, speechRecognition, timer, play, track]);
 
   // Keep ref in sync
   handleRoundSuccessRef.current = handleRoundSuccess;
@@ -205,8 +221,8 @@ export default function FollowSpeechPlayPage() {
     };
     setRounds((prev) => [...prev, roundResult]);
 
-    setTimeout(() => proceedToNextRound(), 1500);
-  }, [currentRound, speechRecognition, play]);
+    track(setTimeout(() => proceedToNextRound(), 1500));
+  }, [currentRound, speechRecognition, play, track]);
 
   const proceedToNextRound = useCallback(() => {
     if (currentRound >= totalRounds) {
@@ -216,18 +232,19 @@ export default function FollowSpeechPlayPage() {
       let restTime = REST_BETWEEN_ROUNDS_SEC;
       setRestCountdown(restTime);
 
-      const restInterval = setInterval(() => {
+      const restInterval = track(setInterval(() => {
         restTime--;
         setRestCountdown(restTime);
         if (restTime <= 0) {
           clearInterval(restInterval);
+          timersRef.current.delete(restInterval);
           setCurrentRound((r) => r + 1);
           // 다음 라운드도 탭 대기 화면으로
           setPhase('waiting');
         }
-      }, 1000);
+      }, 1000));
     }
-  }, [currentRound, totalRounds]);
+  }, [currentRound, totalRounds, track]);
 
   const finishGame = useCallback(() => {
     setPhase('finished');
@@ -260,11 +277,11 @@ export default function FollowSpeechPlayPage() {
     addRecord(gameResult);
     playFanfare();
 
-    setTimeout(() => {
+    track(setTimeout(() => {
       sessionStorage.setItem('lastGameResult', JSON.stringify(gameResult));
       router.push('/result');
-    }, 1000);
-  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, speechRecognition, tts]);
+    }, 1000));
+  }, [rounds, totalRounds, addStars, addRecord, playFanfare, router, speechRecognition, tts, track]);
 
   const handlePlayTTS = useCallback(() => {
     if (currentPrompt) {
@@ -431,10 +448,18 @@ export default function FollowSpeechPlayPage() {
             <div className="text-7xl mb-3">{currentPrompt.emoji}</div>
             <div className="text-4xl font-black text-gray-800 mb-4">{currentPrompt.text}</div>
             <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-green-500 text-white font-bold text-lg">
-              <span className="text-2xl">🔊</span>
-              탭하여 듣기
+              <span className="text-2xl">{tts.isSupported ? '🔊' : '👀'}</span>
+              {tts.isSupported ? '탭하여 듣기' : '탭하여 시작하기'}
             </div>
-            <p className="text-sm text-gray-400 mt-3">듣고 따라 말해봐!</p>
+            {tts.isSupported ? (
+              <p className="text-sm text-gray-400 mt-3">듣고 따라 말해봐!</p>
+            ) : (
+              <p className="text-sm text-amber-500 mt-3">
+                소리가 안 나와요. 글자를 보고 따라 말해봐!
+                <br />
+                <span className="text-gray-400">(소리를 들으려면 Chrome 브라우저를 써주세요)</span>
+              </p>
+            )}
           </button>
         </div>
       )}
