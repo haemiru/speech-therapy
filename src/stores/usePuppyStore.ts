@@ -28,7 +28,10 @@ export const usePuppyStore = create<PuppyStore>()(
 
       addStars: (count: number) =>
         set((state) => {
-          const newTotal = state.totalStars + count;
+          // 임상 원칙: 강아지는 절대 퇴행하지 않는다.
+          // 음수가 들어와도 별이 줄지 않도록 코드 레벨에서 강제한다.
+          const gained = Math.max(0, count);
+          const newTotal = state.totalStars + gained;
           const stageDef = getStageForStars(newTotal);
           return {
             totalStars: newTotal,
