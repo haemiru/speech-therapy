@@ -19,7 +19,7 @@ No test runner configured yet.
 - **Tailwind CSS v4** (`@tailwindcss/postcss`)
 - **Zustand 5** + persist middleware → localStorage
 - **@mediapipe/tasks-vision** — Face Landmarker (jawOpen blendshape)
-- **Deployment**: Vercel (https://speech-therapy-ten-theta.vercel.app/)
+- **Deployment**: Vercel (https://speech-therapy-nine.vercel.app/home)
 
 ## Architecture
 
