@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>소리야 놀자 — 작업 내역 정리</title>
+<style>
+  :root {
+    --primary: #2C5F8D;
+    --done: #2e9e6b;
+    --warn: #e08a1e;
+    --todo: #d94c4c;
+    --bg: #f7f9fb;
+    --card: #ffffff;
+    --line: #e3e8ee;
+    --text: #2b3440;
+    --muted: #6b7785;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Pretendard", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.85;
+    margin: 0;
+    padding: 0 16px 80px;
+    font-size: 17px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header.hero {
+    background: linear-gradient(135deg, #2C5F8D, #4a89c4);
+    color: #fff;
+    border-radius: 20px;
+    padding: 38px 34px;
+    margin: 32px 0;
+    box-shadow: 0 8px 28px rgba(44,95,141,.22);
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 30px; }
+  header.hero p { margin: 4px 0; opacity: .95; font-size: 16px; }
+  .updated { display:inline-block; margin-top:14px; background: rgba(255,255,255,.2); padding: 5px 14px; border-radius: 999px; font-size: 14px; }
+
+  h2 {
+    font-size: 23px;
+    margin: 44px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--primary);
+    color: var(--primary);
+  }
+  h3 { font-size: 19px; margin: 26px 0 10px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin: 16px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,.03);
+  }
+  .lead {
+    background: #eef5fb;
+    border-left: 5px solid var(--primary);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 18px 0;
+  }
+
+  /* 상태 배지 */
+  .badge { display:inline-block; font-size:13px; font-weight:700; padding:3px 11px; border-radius:999px; color:#fff; vertical-align:middle; }
+  .b-done { background: var(--done); }
+  .b-warn { background: var(--warn); }
+  .b-todo { background: var(--todo); }
+
+  /* 타임라인 */
+  .timeline { position: relative; margin: 20px 0 10px; padding-left: 34px; }
+  .timeline::before { content:""; position:absolute; left:11px; top:6px; bottom:6px; width:3px; background: var(--line); }
+  .step { position: relative; margin-bottom: 22px; }
+  .step::before {
+    content:""; position:absolute; left:-29px; top:4px; width:18px; height:18px;
+    border-radius:50%; background: var(--done); border:3px solid #fff; box-shadow:0 0 0 2px var(--done);
+  }
+  .step.warn::before { background: var(--warn); box-shadow:0 0 0 2px var(--warn); }
+  .step h4 { margin:0 0 4px; font-size:18px; }
+  .step .meta { color: var(--muted); font-size:14px; }
+
+  table { width:100%; border-collapse: collapse; margin: 14px 0; font-size: 15.5px; }
+  th, td { border:1px solid var(--line); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#eef2f6; }
+
+  code {
+    background:#eef1f4; padding:2px 7px; border-radius:6px;
+    font-family: Consolas, "D2Coding", monospace; font-size:14px; color:#c0392b;
+  }
+  pre {
+    background:#1e2530; color:#e6edf3; padding:16px 18px; border-radius:10px;
+    overflow-x:auto; font-size:14px; line-height:1.6;
+  }
+  pre code { background:none; color:inherit; padding:0; }
+
+  .box { border-radius:12px; padding:18px 22px; margin:16px 0; }
+  .box-todo { background:#fdeaea; border-left:5px solid var(--todo); }
+  .box-warn { background:#fdf3e3; border-left:5px solid var(--warn); }
+  .box-tip  { background:#e9f7ef; border-left:5px solid var(--done); }
+  .box h3 { margin-top:0; }
+
+  .analogy { background:#fff8e6; border:1px dashed #e0b84a; border-radius:12px; padding:16px 20px; margin:14px 0; }
+  .analogy b { color:#b8860b; }
+
+  ol li, ul li { margin: 6px 0; }
+  .big-num { display:inline-block; width:30px; height:30px; line-height:30px; text-align:center; background:var(--primary); color:#fff; border-radius:50%; font-weight:700; margin-right:8px; font-size:15px; }
+  footer { text-align:center; color:var(--muted); font-size:14px; margin-top:50px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>🐶 소리야 놀자 — 작업 내역 정리</h1>
+    <p>2026년 5월 30~31일에 진행한 복구 · 배포 작업 전체 기록</p>
+    <p>이 문서는 "그동안 무슨 일을 했는지"를 누구나 이해할 수 있게 풀어 쓴 설명서입니다.</p>
+    <span class="updated">최종 업데이트 · 2026-05-31</span>
+  </header>
+
+  <div class="lead">
+    <b>한눈에 요약:</b> 빌드도 안 되고 배포도 깨져 있던 "소리야 놀자" 앱을
+    <b>다시 작동하도록 복구</b>했습니다. 코드·GitHub·Vercel을 모두 정리했고,
+    <b>딱 한 단계(Vercel을 Next.js로 인식시키기)</b>만 남았습니다.
+  </div>
+
+  <!-- 0 -->
+  <h2>0. 이 프로젝트가 뭐예요?</h2>
+  <div class="card">
+    <ul>
+      <li><b>이름:</b> 소리야 놀자 (Speech-Therapy)</li>
+      <li><b>무엇:</b> 발달장애·언어치료 아동을 위한 <b>게임 웹앱</b></li>
+      <li><b>게임 4종:</b> 입운동 · 혀운동 · 소리열기구(마이크에 소리내기) · 따라말하기(음성인식)</li>
+      <li><b>기술:</b> Next.js + React (요즘 많이 쓰는 웹 프레임워크) + Gemini AI(학습 보고서 생성)</li>
+      <li><b>위치:</b> <code>C:\Users\bsuha\Claude-prj\dev\Speech-Therapy</code></li>
+    </ul>
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 왜 이 작업을 했나요?</h2>
+  <div class="card">
+    처음엔 단순히 <b>"프로젝트 상태를 분석해줘"</b>로 시작했습니다.
+    그런데 살펴보니 <b>앱을 켤 수도, 인터넷에 올릴 수도 없는 고장 난 상태</b>였습니다.
+    그래서 "분석 → 고장 발견 → 수리 → 다시 배포"로 작업이 이어졌습니다.
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 무엇이 고장 나 있었나요? (4가지)</h2>
+
+  <div class="analogy">
+    🏠 <b>비유로 설명하면:</b> 집(프로젝트)은 있는데 —
+    ① <b>설계도와 기둥 일부가 사라졌고</b>(빌드 파일 유실),
+    ② <b>같은 집의 도면이 두 개로 갈라져</b> 서로 안 맞고(git 히스토리 단절),
+    ③ <b>집 주소(배포처)가 없어졌으며</b>(Vercel 삭제),
+    ④ <b>현관에 엉뚱하게 다른 집(줄다리기 게임)이 끼어</b> 있었습니다.
+  </div>
+
+  <table>
+    <tr><th>#</th><th>문제</th><th>쉽게 말하면</th></tr>
+    <tr><td>1</td><td><b>빌드 파일 유실</b></td><td>앱을 만들려면 꼭 필요한 설정 파일(<code>package.json</code> 등)이 저장된 적이 없어 사라짐 → 빌드 불가</td></tr>
+    <tr><td>2</td><td><b>git 히스토리 단절</b></td><td>내 컴퓨터의 기록과 GitHub의 기록이 <b>족보가 전혀 안 이어지는</b> 별개 상태</td></tr>
+    <tr><td>3</td><td><b>Vercel 삭제됨</b></td><td>인터넷에 앱을 올려두는 배포처가 통째로 삭제돼 있었음</td></tr>
+    <tr><td>4</td><td><b>줄다리기 혼입</b></td><td>저장소 맨 바깥에 <b>전혀 다른 게임(줄다리기)</b>이 들어 있어서, 배포하면 줄다리기가 떴음</td></tr>
+  </table>
+
+  <!-- 3 -->
+  <h2>3. 어떻게 고쳤나요? (작업 순서)</h2>
+
+  <div class="timeline">
+    <div class="step">
+      <h4>① 사라진 파일 되살리기 <span class="badge b-done">완료</span></h4>
+      <div class="meta">옛날 기록(과거 커밋)에서 사라진 파일만 골라 복원 (30개 → 111개). 최신 코드는 건드리지 않음.</div>
+    </div>
+    <div class="step">
+      <h4>② 옛 부품과 새 코드 맞추기 <span class="badge b-done">완료</span></h4>
+      <div class="meta">되살린 옛 부품이 새 게임 코드와 안 맞던 부분 23곳을, 새 코드 기준으로 부품을 보강해서 해결. 검사 통과(에러 0).</div>
+    </div>
+    <div class="step">
+      <h4>③ 코드 검사기(ESLint) 설치 <span class="badge b-done">완료</span></h4>
+      <div class="meta">빌드할 때 뜨던 경고를 없애기 위해 검사 도구를 정식으로 설치·설정.</div>
+    </div>
+    <div class="step">
+      <h4>④ 저장 & GitHub 정리 <span class="badge b-done">완료</span></h4>
+      <div class="meta">작업을 2개의 묶음(커밋)으로 저장. GitHub의 정식 코드(main)를 완전판으로 교체하고, 옛 코드는 백업(main-backup)으로 안전하게 보관.</div>
+    </div>
+    <div class="step">
+      <h4>⑤ 줄다리기 게임 삭제 <span class="badge b-done">완료</span></h4>
+      <div class="meta">현관에 끼어 있던 줄다리기 게임을 깨끗이 제거. 이제 저장소엔 Speech-Therapy와 ebook만 남음.</div>
+    </div>
+    <div class="step">
+      <h4>⑥ Vercel 다시 연결 <span class="badge b-done">완료</span></h4>
+      <div class="meta">삭제됐던 배포처를 다시 만들고, AI 키(GEMINI_API_KEY) 등록, 빌드 폴더를 <code>Speech-Therapy</code>로 지정.</div>
+    </div>
+    <div class="step warn">
+      <h4>⑦ 마지막 배포 — 한 끗 차이로 실패 <span class="badge b-warn">진행중</span></h4>
+      <div class="meta">앱 빌드는 <b>성공</b>했지만, Vercel이 아직 옛 줄다리기(Vite) 방식으로 인식해서 결과물을 엉뚱한 폴더(<code>dist</code>)에서 찾다 실패. → 아래 "다음에 할 일" 참고.</div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 지금 상태는?</h2>
+  <div class="card">
+    <p><span class="badge b-done">완료</span> 코드 — 빌드·검사 모두 통과 (내 컴퓨터에서도, Vercel 빌드 단계에서도 성공 확인)</p>
+    <p><span class="badge b-done">완료</span> GitHub — 정식 코드(main)가 완전판, 줄다리기 제거됨</p>
+    <p><span class="badge b-done">완료</span> Vercel — 프로젝트 재생성, AI 키·빌드 폴더 설정됨</p>
+    <p><span class="badge b-warn">남음</span> 마지막 배포가 오류 — 이유는 단 하나, Vercel이 아직 <b>Vite(줄다리기) 방식</b>으로 인식 중</p>
+    <pre><code>Error: No Output Directory named "dist" found after the Build completed.
+(번역: "dist 라는 결과물 폴더를 못 찾겠어요")</code></pre>
+    <p style="margin-bottom:0;">→ 즉 <b>앱 자체는 잘 만들어졌는데</b>, Vercel이 결과물을 옛날 줄다리기 위치에서 찾아서 생긴 문제입니다.</p>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 다음에 할 일 ⬅️ 돌아오면 여기부터!</h2>
+
+  <div class="box box-todo">
+    <h3>🔴 1순위 — Vercel을 "Next.js"로 인식시키기 (이것만 하면 끝!)</h3>
+    <p>Vercel 사이트 → <b>speech-therapy</b> 프로젝트 → <b>Settings → Build and Deployment → Framework Settings</b></p>
+    <ol>
+      <li><span class="big-num">1</span><b>Framework Preset</b>을 <code>Vite</code> → <b><code>Next.js</code></b> 로 변경</li>
+      <li><span class="big-num">2</span>그 아래 <b>Build Command / Output Directory / Install Command</b>에 파란 토글(Override)이 켜져 있으면 <b>모두 끄기</b> (특히 Output Directory의 <code>dist</code> 제거)</li>
+      <li><span class="big-num">3</span>저장 → <b>Deployments</b> 탭 → 맨 위 배포 → <b>⋯ → Redeploy</b> (빌드 캐시 체크는 해제)</li>
+      <li><span class="big-num">4</span>성공하면 <code>speech-therapy-nine.vercel.app</code> 에서 <b>"소리야 놀자 🐶"</b>가 뜸 → 끝!</li>
+    </ol>
+  </div>
+
+  <div class="box box-warn">
+    <h3>🟡 선택 — 줄다리기 흔적 마저 지우기 (사용자 결정 대기 중)</h3>
+    <ul>
+      <li>내 컴퓨터 git의 <code>tug-of-war</code> 연결 끊기 — 가벼움</li>
+      <li>GitHub의 <code>haemiru/Tug-of-War</code> 저장소 삭제 — 되돌릴 수 없으니 신중히</li>
+      <li>Vercel에 줄다리기 배포가 따로 있으면 그 프로젝트 삭제</li>
+    </ul>
+  </div>
+
+  <div class="box box-tip">
+    <h3>🟢 선택 — 마무리 점검</h3>
+    <ul>
+      <li>게임 난이도 값(풍선 내려가는 속도 등)은 <b>원본이 아니라 추정치</b>라, 실제로 게임을 해보며 느낌을 확인하면 좋음</li>
+      <li>옛 코드 백업(<code>main-backup</code>)에 있는 "입운동 응원문구" 등 작은 기능이 필요하면 가져올 수 있음</li>
+      <li>내 컴퓨터 git이 좀 지저분(<code>git gc</code>로 정리 가능) — 배포엔 영향 없음</li>
+    </ul>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 참고 정보 (기억 안 날 때 보세요)</h2>
+
+  <h3>저장 기록 (커밋)</h3>
+  <table>
+    <tr><th>번호</th><th>내용</th></tr>
+    <tr><td><code>eae34795</code></td><td>빌드 파일·부품 복원 + 검사기 추가</td></tr>
+    <tr><td><code>1de6f240</code></td><td>새 게임에 맞춰 설정·타입 보강</td></tr>
+    <tr><td><code>c828ccc9</code></td><td>줄다리기 삭제 (현재 최신)</td></tr>
+  </table>
+
+  <h3>GitHub 가지(브랜치) — haemiru/SpeechTherapy</h3>
+  <table>
+    <tr><th>가지</th><th>역할</th></tr>
+    <tr><td><code>main</code></td><td><b>정식·배포 기준</b> (완전판)</td></tr>
+    <tr><td><code>main-backup</code></td><td>옛 코드 백업 (혹시 몰라 보관)</td></tr>
+    <tr><td><code>master</code></td><td>아주 초기 버전 (방치)</td></tr>
+  </table>
+
+  <h3>Vercel</h3>
+  <table>
+    <tr><td>프로젝트</td><td><code>speech-therapy</code> (계정 junominu-3970)</td></tr>
+    <tr><td>주소</td><td><code>speech-therapy-nine.vercel.app</code></td></tr>
+    <tr><td>빌드 폴더(Root Directory)</td><td><code>Speech-Therapy</code> ✅ 설정됨</td></tr>
+    <tr><td>Framework</td><td>⚠️ Vite → <b>Next.js 로 바꿔야 함</b></td></tr>
+    <tr><td>AI 키</td><td><code>GEMINI_API_KEY</code> ✅ 등록됨</td></tr>
+  </table>
+
+  <h3>자주 쓰는 명령어</h3>
+  <pre><code># Speech-Therapy 폴더에서
+npm run dev      # 앱 개발 서버 켜기
+npm run build    # 앱 빌드(완성본 만들기)
+git push         # main에 올리기 → Vercel이 자동으로 배포</code></pre>
+
+  <div class="box box-warn">
+    <h3>⚠️ 꼭 기억할 점 — 이 저장소의 특이한 구조</h3>
+    <p style="margin-bottom:0;">
+      <code>Claude-prj</code> 폴더 하나가 통째로 git 저장소인데, 그 안에
+      Speech-Therapy · ebook 같은 <b>여러 프로젝트가 하위 폴더로 섞여</b> 있습니다.
+      그래서 <b>Vercel 빌드 폴더는 반드시 <code>Speech-Therapy</code></b> 여야 하고,
+      GitHub와 내 컴퓨터의 기록이 원래 안 맞던 것을 강제로 맞춰놓은 상태입니다.
+    </p>
+  </div>
+
+  <footer>
+    이 문서는 다음 작업을 위한 인수인계용입니다 · 더 자세한 기록은 같은 폴더의 <b>WORK-LOG.md</b> 참고
+  </footer>
+
+</div>
+</body>
+</html>
