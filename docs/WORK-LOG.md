@@ -19,7 +19,7 @@
 - **무엇:** 발달장애·언어치료 아동용 게임 웹앱
 - **기술:** Next.js 15 + React 19 + TypeScript, Gemini API(AI 학습 보고서)
 - **게임 4종:** 입운동 / 혀운동 / 소리열기구(마이크 음량) / 따라말하기(음성인식·TTS)
-- **로컬 위치:** `C:\Users\bsuha\Claude-prj\dev\Speech-Therapy`
+- **로컬 위치:** `C:\Users\bsuha\Claude-prj\02.Dev\Speech-Therapy`
 
 ---
 
